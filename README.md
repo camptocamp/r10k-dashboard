@@ -1,7 +1,7 @@
-Github Repositories Dashboard
+Puppet Modules Dashboard
 ==============================
 
-This is a simple dashboard to monitor your Github repositories. In a few words:
+This is a simple dashboard to monitor your Puppet modules. In a few words:
 
 * It is written in Javascript, using [`github.js`](https://github.com/michael/github);
 * It uses Github's API with OAuth in order to increase the amount of allowed requests;
@@ -73,7 +73,7 @@ tracker](https://github.com/camptocamp/puppet-modules-dashboard/issues).
 
 ## License
 
-Copyright (c) 2013 <mailto:puppet@camptocamp.com> All rights reserved.
+Copyright (c) 2014 <mailto:puppet@camptocamp.com> All rights reserved.
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

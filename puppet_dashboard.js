@@ -178,9 +178,39 @@ var plugin_options;
     var totalScoreElem = document.getElementById('total_score');
     totalScoreElem.innerHTML = 'Total score: '+totalScore;
   }
+
+  function parsePuppetfile(contents) {
+    // Split each entry by newline, unless preceded by a comma
+    var entries = contents.match(/[^\n][\s\S]+?[^,](?=\s*\n\s*)/g);
+    var mods = new Array();
+    for (var i=0; i<entries.length; i++) {
+      if (/^mod\s/.test(entries[i])) {
+        var parts = entries[i].split(/\s*,\s*\n*\s*/);
+        var name_parts = parts[0].match(/mod\s+'(\w+)[\/-](\w+)'/)
+        var user = name_parts[1];
+        var name = name_parts[2];
+        var mod = {
+          'name': name,
+          'user': user
+        }
+        if (/^'\d+\.\d+\.\d+'$/.test(parts[1])) {
+          // Version number
+          mod.version = parts[1].replace(/'/g, '');
+        } else {
+          for (var j=1; j<parts.length; j++) {
+            var param_parts = parts[j].split(/\s*=>\s*/);
+            mod[param_parts[0].replace(':', '')] = param_parts[1].replace(/'/g, '');
+          }
+        }
+        mods.push(mod);
+      }
+    }
+    return mods;
+  }
     
   function updateRepo(name) {
-    var r = github.getRepo(account, name);
+    // TODO: get actual github repo
+    var r = github.getRepo(account, 'puppet-'+name);
     repositories[name]['repo'] = r;
     var repoLine = document.getElementById(name);
     computeState(repoLine, 'unknown', true);
@@ -189,7 +219,7 @@ var plugin_options;
       // refresh all cells
       for (i=0; i<repoHeads.length; i++) {
         var plugin = repoHeads[i].replace('plugin:', '');
-        dashboard[plugin](repo);
+        dashboard[plugin](name, repo);
       }
     });
   
@@ -200,15 +230,17 @@ var plugin_options;
     }
   }
     
-  function listRepos(err, repos) {
+  function listRepos(repos) {
     var spinner = document.getElementById('spinner');
   
+    /*
     if (err) {
       spinner.style.display = 'none';
       var err_msg = JSON.parse(err.request.responseText, function(key, value) { return value;});
       dispError('Error '+err.request.status+' ('+err.request.statusText+'): '+err_msg.message);
       return;
     }
+    */
   
     var reposTable = document.getElementById('repositories');
     var reposTableBody = document.getElementsByTagName('tbody')[0];
@@ -231,13 +263,16 @@ var plugin_options;
     // Update total
     var total = document.getElementById('total');
     if (total) {
-      total.innerHTML = filtered_repos.length+' repositories';
+      total.innerHTML = repos.length+' modules';
     }
+
+    console.log(filtered_repos);
   
     for (var i=0; i<filtered_repos.length; i++) {
       var name = filtered_repos[i];
       var existing = document.getElementById(name);
       if (! existing) {
+        console.log("creating line for "+name);
         var repoLine = document.createElement('tr');
         repoLine.setAttribute('id', name);
         reposTableBody.appendChild(repoLine);
@@ -282,7 +317,7 @@ var plugin_options;
     cookies[name] = null;
   }
 
-  var GHDashboard = function(options) {
+  var PuppetDashboard = function(options) {
     var org = options.org;
     var user = options.user;
     refresh = options.refresh || 1800000; // 30 minutes
@@ -384,17 +419,18 @@ var plugin_options;
       spinner.setAttribute('id', 'spinner');
       spinner.innerHTML = '<td colspan="'+(repoHeads.length+2)+'"><img src="images/loading_bar.gif" /></td>';
     
-      if (org) {
-        reposTableBody.appendChild(spinner);
-        reposFunc = gh_user.orgRepos;
-        gh_user.orgRepos(account, listRepos);
-      } else if (user) {
-        reposTableBody.appendChild(spinner);
-        reposFunc = gh_user.userRepos;
-        gh_user.userRepos(account, listRepos);
-      } else {
-        dispError('You must specify a user or org.');
-      }
+      // TODO: get rid of user/org code
+      reposTableBody.appendChild(spinner);
+      var pm_common = github.getRepo(org, 'puppetmaster-common');
+      pm_common.contents('master', 'Puppetfile', function(err, contents) {
+        if(err) {
+          dispError('Could not find Puppetfile.');
+        } else {
+          var modules = parsePuppetfile(contents);
+          console.log(modules);
+          listRepos(modules);
+        }
+      });
     
       sorttable.makeSortable(reposTable);
       this.sortByState();
@@ -419,15 +455,15 @@ var plugin_options;
   };
 
   if (typeof exports !== 'undefined') {
-    // GHDashboard = exports;
-    module.exports = GHDashboard;
+    // PuppetDashboard = exports;
+    module.exports = PuppetDashboard;
     module.exports = updateRepo;
     module.exports = listRepos;
     module.exports = readCookie;
     module.exports = addCookie;
     module.exports = worstState;
   } else {
-    window.GHDashboard = GHDashboard;
+    window.PuppetDashboard = PuppetDashboard;
     window.updateRepo = updateRepo;
     window.listRepos = listRepos;
     window.readCookie = readCookie;

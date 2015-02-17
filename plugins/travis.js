@@ -1,19 +1,19 @@
-dashboard.travis = function(repo) {
+dashboard.travis = function(name, repo) {
   var status = 'unknown';
   if (repo.private) {
     var access_token = readCookie('travis_access_token');
     if (access_token) {
-      getTravisStatus(repo, true, access_token);
+      getTravisStatus(name, repo, true, access_token);
     } else {
       var gh_token = readCookie('access_token');
       travisAPICall('/auth/github', {"github_token": gh_token}, true, 'POST', null, false, function(err, res) {
         access_token = res.access_token;
         addCookie('travis_access_token', access_token, 1);
-        getTravisStatus(repo, true, access_token);
+        getTravisStatus(name, repo, true, access_token);
       });
     }
   } else {
-    getTravisStatus(repo, false, null);
+    getTravisStatus(name, repo, false, null);
   }
 }
 
@@ -26,7 +26,7 @@ function travisMungeState(repo, state) {
   }
 }
 
-function getTravisStatus(repo, priv, travis_token) {
+function getTravisStatus(name, repo, priv, travis_token) {
   travisAPICall('/repos/'+account+'/'+repo.name+'/branches/'+repo.default_branch, null, priv, 'GET', travis_token, false, function(err, res) {
     var msg;
     var customkey;
@@ -74,7 +74,8 @@ function getTravisStatus(repo, priv, travis_token) {
       }
     }
     var api = travisURL(priv);
-    updateTravisCell(repo.name, 'https://'+api+'/', repo.default_branch, travis_token, msg, status, image, customkey);
+    // TODO: pass name + repo.name
+    updateTravisCell(name, 'https://'+api+'/', repo.default_branch, travis_token, msg, status, image, customkey);
   });
 }
 

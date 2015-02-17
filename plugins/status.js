@@ -1,13 +1,13 @@
-dashboard.status = function(repo) {
+dashboard.status = function(name, repo) {
   if (repo.fork) {
     var p = repo.parent;
-    var r = repositories[repo.name]['repo'];
+    var r = repositories[name]['repo'];
     var b = repo.default_branch;
 
     // get diff
     r.compare(p.owner.login+':'+b, account+':'+b, function(err, diff) {
       if (err) {
-        updateCell(repo.name, 'status', 'ERR', 'err');
+        updateCell(name, 'status', 'ERR', 'err');
       } else {
         var diff_msg;
         var state = 'ok';
@@ -43,11 +43,11 @@ dashboard.status = function(repo) {
           html = diff_msg;
           customkey = '4';
         }
-        updateCell(repo.name, 'status', html, state, customkey);
+        updateCell(name, 'status', html, state, customkey);
       }
     });
   } else {
-    updateCell(repo.name, 'status', '');
+    updateCell(name, 'status', '');
   }
 }
 

@@ -1,77 +1,78 @@
-dashboard.forge = function(repo) {
+dashboard.forge = function(name, repo) {
+  console.log(repo);
   plugin_options.forge = plugin_options.forge || {};
-  var r = repositories[repo.name]['repo'];
+  var r = repositories[name]['repo'];
   r.contents('master', 'metadata.json', function(err, contents) {
     if (err) {
       r.contents('master', 'Modulefile', function(err, contents) {
         if (err) {
           // This might be a warning/error at some point
-          updateCell(repo.name, 'forge', '');
+          updateCell(name, 'forge', '');
         } else {
-          parseModulefile(repo, contents);
+          parseModulefile(name, repo, contents);
         }
       }, false);
     } else {
-      parseMetadataJSON(repo, contents);
+      parseMetadataJSON(name, repo, contents);
     }
   });
 };
 
-function parseMetadataJSON(repo, contents) {
+function parseMetadataJSON(name, repo, contents) {
   var json = JSON.parse(contents);
   var module = json.name;
-  updateForge(repo, module);
+  updateForge(name, repo, module);
 }
 
-function parseModulefile(repo, contents) {
+function parseModulefile(name, repo, contents) {
   var matches = contents.match(/name\s+(?:["'])([^"']+)(?:["\'])/);
   var module = matches[1];
-  updateForge(repo, module);
+  updateForge(name, repo, module);
 }
 
-function updateForge(repo, module) {
+function updateForge(name, repo, module) {
   var m = module.split(/[\/-]/);
   var forgeAccount = plugin_options.forge.account || m[0];
   // forge.puppetlabs.com doesn't allow CORS, use a proxy
   forgeAPICall('/users/'+forgeAccount+'/modules/'+m[1]+'/releases/find.json', true, function(err, res) {
     if (err) {
       var html = '<span title="Module does not exist on the forge but has metadata file"><i class="fa fa-times"></i></span>';
-      updateForgeCell(repo.name, html, 'warn', '4');
+      updateForgeCell(name, html, 'warn', '4');
     } else {
-      checkForgeTags(repo, res.version, 'http://forge.puppetlabs.com'+res.file);
+      checkForgeTags(name, repo, res.version, 'http://forge.puppetlabs.com'+res.file);
     }
   });
 };
 
-function checkForgeTags(repo, version, url) {
+function checkForgeTags(name, repo, version, url) {
   // Check if there is a tag for the release
   var tags_r;
   if (repo.fork) {
     tags_r = github.getRepo(repo.parent.owner.login, repo.parent.name);
     tags_r.info = repo.parent;
   } else {
-    tags_r = repositories[repo.name]['repo'];
+    tags_r = repositories[name]['repo'];
     tags_r.info = repo;
   }
   var html = '<a href="'+url+'">'+version+'</a>';
   tags_r.listTags(function(err, tags) {
     if (err) {
       html += ' <a href="'+tags_r.info.tags_url+'" title="Failed to get tags"><i class="fa fa-warning"></i></a>';
-      updateForgeCell(repo.name, html, 'warn', '3');
+      updateForgeCell(name, html, 'warn', '3');
     } else {
       var version_tag = versionTagURL(tags, version);
       if (version_tag) {
-        checkForgeTagsCommits(repo, tags_r, version, url, version_tag);
+        checkForgeTagsCommits(name, repo, tags_r, version, url, version_tag);
       } else {
         // No tag found, it's a warning
         html += ' <a href="'+tags_r.info.tags_url+'" title="No matching tag found in repository"><i class="fa fa-warning"></i></a>';
-        updateForgeCell(repo.name, html, 'warn', '2');
+        updateForgeCell(name, html, 'warn', '2');
       }
     }
   });
 }
 
-function checkForgeTagsCommits(repo, tags_r, version, url, version_tag) {
+function checkForgeTagsCommits(name, repo, tags_r, version, url, version_tag) {
   var b = repo.default_branch;
   var html = '<a href="'+url+'">'+version+'</a>';
   html += ' <a href="'+version_tag.url+'" title="Matching tag found in repository"><i class="fa fa-tag"></i></a>';
@@ -82,7 +83,7 @@ function checkForgeTagsCommits(repo, tags_r, version, url, version_tag) {
   tags_r.compare(tags_r.info.owner.login+':'+version_tag.tag, account+':'+b, function(err, diff) {
     if (err) {
       html += ' <span title="Failed get commits since tag"><i class="fa fa-warning"></i></span>';
-      updateCell(repo.name, 'status', html, 'err', '15');
+      updateCell(name, 'status', html, 'err', '15');
     } else {
       if (diff.status == 'ahead') {
         diff_url = diff.html_url;
@@ -108,7 +109,7 @@ function checkForgeTagsCommits(repo, tags_r, version, url, version_tag) {
         customkey = '14';
       }
     }
-    updateForgeCell(repo.name, html, state, customkey);
+    updateForgeCell(name, html, state, customkey);
   });
 }
 

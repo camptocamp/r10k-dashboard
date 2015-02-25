@@ -242,21 +242,26 @@ var plugin_options;
   }
 
   function updateRepoWithGH(name) {
-    var gh_uri;
     if (repositories[name]['info']['git']) {
-      gh_uri = repositories[name]['info']['git'];
+      repositories[name]['github'] = {
+        'uri': repositories[name]['info']['git']
+      };
     } else {
       // Try to get from forge
-      gh_uri = repositories[name].forge.current_release.metadata.source;
+      repositories[name]['github'] = {
+        'uri': repositories[name].forge.current_release.metadata.source
+      };
     }
 
-    console.log(name+': gh_uri='+gh_uri);
-    var matches = gh_uri.match(/\/([^\/]+)\/([^\/]+)(\.git)?$/)
-    var gh_user = matches[1];
-    var gh_repo = matches[2];
+console.log(repositories[name].github);
+    var matches = repositories[name].github.uri.match(/\/([^\/]+)\/([^\/]+)(\.git)?$/);
+    repositories[name].github.user = matches[1];
+    repositories[name].github.repo = matches[2];
 
-    console.log(name+": Found gh_user/gh_repo to be "+gh_user+'/'+gh_repo);
-    var r = github.getRepo(gh_user, gh_repo);
+    // Update left column
+    document.getElementById(name).getElementsByTagName('a')[0].href = repositories[name].github.uri;
+
+    var r = github.getRepo(repositories[name].github.user, repositories[name].github.repo);
     repositories[name]['repo'] = r;
     console.log(repositories[name]);
     var repoLine = document.getElementById(name);
@@ -347,7 +352,7 @@ var plugin_options;
  
   function initRepo(name, heads) {
     info = repositories[name]['info'];
-    html = '<td><a href="'+info.html_url+'">'+name+'</a></td>';
+    html = '<td><a href="#">'+name+'</a></td>';
 
     for (i=0; i<heads.length; i++) {
       html += '<td class="'+heads[i]+'"><i class="fa fa-spinner fa-spin"></i></td>';

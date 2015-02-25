@@ -228,17 +228,10 @@ var plugin_options;
   };
     
   function updateRepo(name) {
-    var gh_url;
-    if (repositories[name]['info']['git']) {
-      gh_url = repositories[name]['info']['git'];
+    forgeAPICall('/modules/'+repositories[name]['info']['user']+'-'+repositories[name]['info']['name'], function(err, res) {
+      repositories[name]['forge'] = res;
       updateRepoWithGH(name);
-    } else {
-      console.log(name+": Getting github info from the forge")
-      forgeAPICall('/modules/'+repositories[name]['info']['user']+'-'+repositories[name]['info']['name'], function(err, res) {
-        repositories[name]['forge'] = res;
-        updateRepoWithGH(name);
-      });
-    }
+    });
   }
 
   function updateRepoWithGH(name) {
@@ -253,7 +246,6 @@ var plugin_options;
       repositories[name]['github'].uri = repositories[name].forge.homepage_url;
     }
 
-    console.log(repositories[name]);
     var matches = repositories[name].github.uri.match(/\/([^\/]+)\/([^\/\.]+)(\.git)?$/);
     repositories[name].github.user = matches[1];
     repositories[name].github.repo = matches[2];
@@ -325,7 +317,6 @@ var plugin_options;
       var name = filtered_repos[i];
       var existing = document.getElementById(name);
       if (! existing) {
-        console.log("creating line for "+name);
         var repoLine = document.createElement('tr');
         repoLine.setAttribute('id', name);
         reposTableBody.appendChild(repoLine);

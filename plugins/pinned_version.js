@@ -2,7 +2,7 @@ dashboard.pinned_version = function(name, repo) {
   var r = repositories[name];
   var version;
   var url;
-  if (info.ref) {
+  if (r.info.ref) {
     version = r.info.ref;
     if (/^[a-z0-9]+$/.test(version)) {
       // Assume commit

@@ -207,11 +207,58 @@ var plugin_options;
     }
     return mods;
   }
+
+  function forgeAPICall(path, cb) {
+    var url = 'https://forgeapi.puppetlabs.com/v3'+escape(path);
+    var xhr = new XMLHttpRequest();
+
+    xhr.open('GET', url, true);
+    xhr.onreadystatechange = function () {
+      if (this.readyState == 4) {
+        if (this.status >= 200 && this.status < 300 || this.status === 304) {
+          cb(null, this.responseText ? JSON.parse(this.responseText) : true, this);
+        } else {
+          cb({path: path, request: this, error: this.status});
+        }
+      }
+    };
+    xhr.setRequestHeader('X-Referer',location.href);
+    xhr.setRequestHeader('Content-Type','application/json;charset=UTF-8');
+    xhr.send();
+  };
     
   function updateRepo(name) {
-    // TODO: get actual github repo
-    var r = github.getRepo(account, 'puppet-'+name);
+    var gh_url;
+    if (repositories[name]['info']['git']) {
+      gh_url = repositories[name]['info']['git'];
+      updateRepoWithGH(name);
+    } else {
+      console.log(name+": Getting github info from the forge")
+      forgeAPICall('/modules/'+repositories[name]['info']['user']+'-'+repositories[name]['info']['name'], function(err, res) {
+        repositories[name]['forge'] = res;
+        updateRepoWithGH(name);
+      });
+    }
+  }
+
+  function updateRepoWithGH(name) {
+    var gh_uri;
+    if (repositories[name]['info']['git']) {
+      gh_uri = repositories[name]['info']['git'];
+    } else {
+      // Try to get from forge
+      gh_uri = repositories[name].forge.current_release.metadata.source;
+    }
+
+    console.log(name+': gh_uri='+gh_uri);
+    var matches = gh_uri.match(/\/([^\/]+)\/([^\/]+)(\.git)?$/)
+    var gh_user = matches[1];
+    var gh_repo = matches[2];
+
+    console.log(name+": Found gh_user/gh_repo to be "+gh_user+'/'+gh_repo);
+    var r = github.getRepo(gh_user, gh_repo);
     repositories[name]['repo'] = r;
+    console.log(repositories[name]);
     var repoLine = document.getElementById(name);
     computeState(repoLine, 'unknown', true);
   
@@ -266,8 +313,6 @@ var plugin_options;
       total.innerHTML = repos.length+' modules';
     }
 
-    console.log(filtered_repos);
-  
     for (var i=0; i<filtered_repos.length; i++) {
       var name = filtered_repos[i];
       var existing = document.getElementById(name);
@@ -356,7 +401,7 @@ var plugin_options;
     this.loadPlugin = function(plugin) {
       var script = document.createElement('script');
       script.type = 'text/javascript';
-      script.src = 'plugins/'+plugin+'.js'; 
+      script.src = 'puppet_plugins/'+plugin+'.js';
       document.body.appendChild(script);
     }
 
@@ -427,7 +472,6 @@ var plugin_options;
           dispError('Could not find Puppetfile.');
         } else {
           var modules = parsePuppetfile(contents);
-          console.log(modules);
           listRepos(modules);
         }
       });

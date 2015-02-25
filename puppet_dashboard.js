@@ -254,7 +254,7 @@ var plugin_options;
     }
 
 console.log(repositories[name].github);
-    var matches = repositories[name].github.uri.match(/\/([^\/]+)\/([^\/]+)(\.git)?$/);
+    var matches = repositories[name].github.uri.match(/\/([^\/]+)\/([^\/\.]+)(\.git)?$/);
     repositories[name].github.user = matches[1];
     repositories[name].github.repo = matches[2];
 

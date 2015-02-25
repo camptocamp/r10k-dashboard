@@ -27,7 +27,8 @@ function travisMungeState(repo, state) {
 }
 
 function getTravisStatus(name, repo, priv, travis_token) {
-  travisAPICall('/repos/'+account+'/'+repo.name+'/branches/'+repo.default_branch, null, priv, 'GET', travis_token, false, function(err, res) {
+  var gh = repositories[name].github;
+  travisAPICall('/repos/'+gh.user+'/'+gh.repo+'/branches/'+repo.default_branch, null, priv, 'GET', travis_token, false, function(err, res) {
     var msg;
     var customkey;
     var image;
@@ -124,7 +125,8 @@ function travisURL(priv) {
 }
 
 function updateTravisCell(name, travis_url, branch, travis_token, msg, status, image, customkey) {
-  var html = '<a href="'+travis_url+account+'/'+name+'">';
+  var gh = repositories[name].github;
+  var html = '<a href="'+travis_url+gh.user+'/'+gh.repo+'">';
   if (image) {
     var image_src = 'images/travis/'+image+'.svg';
     html += '<img src="'+image_src+'" title="'+msg+' (state='+status+')" />';

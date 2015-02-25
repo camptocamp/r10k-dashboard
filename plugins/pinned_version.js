@@ -6,7 +6,7 @@ dashboard.pinned_version = function(name, repo) {
     version = r.info.ref;
     if (/^[a-z0-9]+$/.test(version)) {
       // Assume commit
-      url = r.info.git+'/commit/'+version;
+      url = r.info.git+'/tree/'+version;
     } else {
       // Assume tag (or branch?)
       url = r.info.git+'/releases/tag/'+version;

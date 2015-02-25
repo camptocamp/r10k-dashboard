@@ -1,8 +1,12 @@
 dashboard.latest_version = function(name, repo) {
   var r = repositories[name];
-  console.log(r.forge);
-  var url = '';
-  var version = r.forge.current_release.version;
-  var html = '<a href="'+url+'">'+version+'</a>';
+  var html;
+  if (r.info.version) {
+    version = r.forge.current_release.version;
+    url = 'https://forge.puppetlabs.com/'+r.forge.current_release.module.owner.username+'/'+r.forge.name+'/'+version;
+    html = '<a href="'+url+'">'+version+'</a>';
+  } else {
+    html = 'N/A';
+  }
   updateCell(name, 'latest_version', html);
 }

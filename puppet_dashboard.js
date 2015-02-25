@@ -259,7 +259,11 @@ console.log(repositories[name].github);
     repositories[name].github.repo = matches[2];
 
     // Update left column
-    document.getElementById(name).getElementsByTagName('a')[0].href = repositories[name].github.uri;
+    if (repositories[name].forge) {
+      document.getElementById(name).getElementsByTagName('a')[0].href = repositories[name].forge.homepage_url;
+    } else {
+      document.getElementById(name).getElementsByTagName('a')[0].href = repositories[name].github.uri;
+    }
 
     var r = github.getRepo(repositories[name].github.user, repositories[name].github.repo);
     repositories[name]['repo'] = r;

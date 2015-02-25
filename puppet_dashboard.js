@@ -242,18 +242,18 @@ var plugin_options;
   }
 
   function updateRepoWithGH(name) {
+    repositories[name]['github'] = { }
     if (repositories[name]['info']['git']) {
-      repositories[name]['github'] = {
-        'uri': repositories[name]['info']['git']
-      };
-    } else {
+      repositories[name]['github'].uri = repositories[name]['info']['git'];
+    } else if (repositories[name].forge.current_release.metadata.source !== 'UNKNOWN') {
       // Try to get from forge
-      repositories[name]['github'] = {
-        'uri': repositories[name].forge.current_release.metadata.source
-      };
+      repositories[name]['github'].uri = repositories[name].forge.current_release.metadata.source;
+    } else {
+      // Try with the homepage from forge
+      repositories[name]['github'].uri = repositories[name].forge.homepage_url;
     }
 
-console.log(repositories[name].github);
+    console.log(repositories[name]);
     var matches = repositories[name].github.uri.match(/\/([^\/]+)\/([^\/\.]+)(\.git)?$/);
     repositories[name].github.user = matches[1];
     repositories[name].github.repo = matches[2];
@@ -267,7 +267,6 @@ console.log(repositories[name].github);
 
     var r = github.getRepo(repositories[name].github.user, repositories[name].github.repo);
     repositories[name]['repo'] = r;
-    console.log(repositories[name]);
     var repoLine = document.getElementById(name);
     computeState(repoLine, 'unknown', true);
   

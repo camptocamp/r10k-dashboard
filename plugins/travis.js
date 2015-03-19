@@ -19,7 +19,7 @@ dashboard.travis = function(name, repo) {
 
 // Limit state to warning if repo is a fork
 function travisMungeState(repo, state) {
-  if (repo.fork && state == 'err') {
+  if ((repo.fork || repo.owner.login !== account) && state == 'err') {
     return 'warn';
   } else {
     return state;
@@ -34,7 +34,7 @@ function getTravisStatus(name, repo, priv, travis_token) {
     var image;
     if (err) {
       msg = 'Error while getting Travis status';
-      status = 'err';
+      status = travisMungeState(repo, 'err');
       customkey = '9';
       image = null;
     } else {

@@ -8,6 +8,7 @@ var gh_user;
 var github;
 var token;
 var account;
+var r10k_repo;
 var refresh;
 var refresh_randomize;
 var repoHeads;
@@ -278,7 +279,7 @@ var plugin_options;
     }
   }
     
-  function listRepos(repos) {
+  function listRepos(repos, refresh) {
     var spinner = document.getElementById('spinner');
     var reposTable = document.getElementById('repositories');
     var reposTableBody = document.getElementsByTagName('tbody')[0];
@@ -313,8 +314,10 @@ var plugin_options;
         reposTableBody.appendChild(repoLine);
   
         initRepo(name, repoHeads);
+        updateRepo(name);
+      } else if (refresh === name) {
+        updateRepo(name);
       }
-      updateRepo(name);
     }
     filtered_repos.sort();
   
@@ -335,14 +338,14 @@ var plugin_options;
     }
   }
 
-  function updateModuleList(account, r10k_repo) {
+  function updateModuleList(account, r10k_repo, refresh) {
     var pm_common = github.getRepo(account, r10k_repo);
     pm_common.contents('master', 'Puppetfile', function(err, contents) {
       if(err) {
         dispError('Could not find Puppetfile.');
       } else {
         var modules = parsePuppetfile(contents);
-        listRepos(modules);
+        listRepos(modules, refresh);
       }
     });
   }
@@ -355,10 +358,14 @@ var plugin_options;
       html += '<td class="'+heads[i]+'"><i class="fa fa-spinner fa-spin"></i></td>';
     }
   
-    html += '<td><a href="javascript:updateRepo(\''+name+'\')"><i class="fa fa-refresh fa-1g"></i></a></td>';
+    html += '<td><a href="javascript:refreshModule(\''+name+'\')"><i class="fa fa-refresh fa-1g"></i></a></td>';
     document.getElementById(name).innerHTML = html;
   }
   
+  function refreshModule(name) {
+    updateModuleList(account, r10k_repo, name);
+  }
+
   function addCookie(name, value, expire) {
     createCookie(name, value, expire);
     cookies[name] = null;
@@ -367,7 +374,7 @@ var plugin_options;
   var PuppetDashboard = function(options) {
     var org = options.org;
     var user = options.user;
-    var r10k_repo = options.r10k_repo;
+    r10k_repo = options.r10k_repo;
     refresh = options.refresh || 1800000; // 30 minutes
     refresh_randomize = options.refresh_randomize || 0.5; // up to 15 minutes
     var filter = options.filter;
@@ -503,6 +510,7 @@ var plugin_options;
   } else {
     window.PuppetDashboard = PuppetDashboard;
     window.updateRepo = updateRepo;
+    window.refreshModule = refreshModule;
     window.listRepos = listRepos;
     window.readCookie = readCookie;
     window.addCookie = addCookie;

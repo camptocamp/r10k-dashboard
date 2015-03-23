@@ -1,6 +1,6 @@
 dashboard.travis = function(name) {
   var status = 'unknown';
-  var repo = repositories[name].github.repo.info;
+  var repo = repositories[name].github.repo_obj.info;
   if (repo.private) {
     var access_token = readCookie('travis_access_token');
     if (access_token) {

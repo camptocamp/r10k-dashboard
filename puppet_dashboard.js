@@ -263,8 +263,8 @@ var plugin_options;
     computeState(repoLine, 'unknown', true);
   
     r.show(function(err, repo) {
-      repositories[name].github.repo = r;
-      repositories[name].github.repo.info = repo;
+      repositories[name].github.repo_obj = r;
+      repositories[name].github.repo_obj.info = repo;
       // refresh all cells
       for (i=0; i<repoHeads.length; i++) {
         var plugin = repoHeads[i].replace('plugin:', '');

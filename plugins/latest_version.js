@@ -34,7 +34,7 @@ function checkForgeTagsCommits(name, repo, tags_r, version, url, version_tag) {
   var customkey;
 
   // get diff
-  tags_r.compare(tags_r.info.owner.login+':'+version_tag.tag, account+':'+b, function(err, diff) {
+  tags_r.repo.compare(tags_r.info.user+':'+version_tag.tag, account+':'+b, function(err, diff) {
     if (err) {
       html += ' <span title="Failed get commits since tag"><i class="fa fa-warning"></i></span>';
       updateCell(name, 'latest_version', 'status', html, 'err', '15');
@@ -69,7 +69,7 @@ function checkForgeTagsCommits(name, repo, tags_r, version, url, version_tag) {
 
 function versionTagURL(tags, version) {
   for (var i=0; i<tags.length; i++) {
-    if (tags[i].name == version || tags[i].name == 'v'+version) {
+    if (tags[i].name === version || tags[i].name === 'v'+version) {
       return { 'url': tags[i].commit.url, 'tag': tags[i].name };
     }
   }

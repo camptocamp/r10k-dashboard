@@ -17,7 +17,7 @@ dashboard.latest_version = function(name, repo) {
           if (version_tag) {
             var html = '<a href="'+version_url+'">'+version+'</a>';
             html += ' <a href="'+version_tag.url+'" title="Matching tag found in repository"><i class="fa fa-tag"></i></a>';
-            checkForgeTagsCommits(name, repo, r, version, version_url, version_tag, r.info.ref, html);
+            checkForgeTagsCommits(name, repo, r, version, version_url, version_tag,r.github.user, r.info.ref, html);
           } else {
             // No tag found, it's a warning
             html += ' <a href="'+r.info.tags_url+'" title="No matching tag found in repository"><i class="fa fa-warning"></i></a>';
@@ -41,12 +41,12 @@ dashboard.latest_version = function(name, repo) {
   }
 }
 
-function checkForgeTagsCommits(name, repo, tags_r, version, url, version_tag, b, html) {
+function checkForgeTagsCommits(name, repo, tags_r, version, url, version_tag, ref_user, b, html) {
   var state;
   var customkey;
 
   // get diff
-  tags_r.repo.compare(tags_r.github.user+':'+version_tag.tag, tags_r.github.user+':'+b, function(err, diff) {
+  tags_r.repo.compare(tags_r.github.user+':'+version_tag.tag, ref_user+':'+b, function(err, diff) {
     if (err) {
       html += ' <span title="Failed to get commits since tag"><i class="fa fa-warning"></i></span>';
       updateCell(name, 'latest_version', 'status', html, 'err', '15');

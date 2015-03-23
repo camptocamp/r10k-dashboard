@@ -403,7 +403,7 @@ var plugin_options;
     this.loadPlugin = function(plugin) {
       var script = document.createElement('script');
       script.type = 'text/javascript';
-      script.src = 'puppet_plugins/'+plugin+'.js';
+      script.src = 'plugins/'+plugin+'.js';
       document.body.appendChild(script);
     }
 

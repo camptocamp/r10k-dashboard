@@ -32,7 +32,7 @@ var plugin_options;
   }
 
   function computeState(line, newState, force) {
-    var oldState = 'unknown';
+    var oldState = 'ok';
     var classes = line.className.split(' ');
     var state;
     var cells = line.getElementsByTagName('td');
@@ -260,7 +260,7 @@ var plugin_options;
     var r = github.getRepo(repositories[name].github.user, repositories[name].github.repo);
     repositories[name]['repo'] = r;
     var repoLine = document.getElementById(name);
-    computeState(repoLine, 'unknown', true);
+    computeState(repoLine, 'ok', true);
   
     r.show(function(err, repo) {
       repositories[name].github.repo_obj = r;

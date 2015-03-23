@@ -1,4 +1,4 @@
-dashboard.pinned_version = function(name, repo) {
+dashboard.pinned_version = function(name) {
   var r = repositories[name];
   var version;
   var url;

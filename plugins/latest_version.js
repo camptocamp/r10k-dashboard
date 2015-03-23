@@ -1,4 +1,4 @@
-dashboard.latest_version = function(name, repo) {
+dashboard.latest_version = function(name) {
   var r = repositories[name];
   var html;
   
@@ -22,7 +22,7 @@ dashboard.latest_version = function(name, repo) {
             new_ref = r.info.ref;
           } else {
             new_ref_tag = versionTagURL(tags, r.info.version);
-            if (base_ref_tag) {
+            if (new_ref_tag) {
               new_ref = new_ref_tag.tag;
             } else {
               // No tag found, it's a warning

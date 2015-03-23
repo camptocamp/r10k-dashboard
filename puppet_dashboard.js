@@ -263,10 +263,12 @@ var plugin_options;
     computeState(repoLine, 'unknown', true);
   
     r.show(function(err, repo) {
+      repositories[name].github.repo = r;
+      repositories[name].github.repo.info = repo;
       // refresh all cells
       for (i=0; i<repoHeads.length; i++) {
         var plugin = repoHeads[i].replace('plugin:', '');
-        dashboard[plugin](name, repo);
+        dashboard[plugin](name);
       }
     });
   

@@ -64,7 +64,7 @@ function checkForgeCommits(name, tags_r, version, base_user, base_ref, new_user,
   tags_r.repo.compare(base_user+':'+base_ref, new_user+':'+new_ref, function(err, diff) {
     if (err) {
       html += ' <span title="Failed to get commits since tag"><i class="fa fa-warning"></i></span>';
-      updateCell(name, 'latest_version', 'status', html, 'err', '15');
+      updateCell(name, 'latest_version', html, 'err', '15');
     } else {
       if (diff.status == 'ahead') {
         diff_url = diff.html_url;

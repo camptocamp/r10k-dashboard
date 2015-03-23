@@ -30,7 +30,7 @@ dashboard.latest_version = function(name) {
         if (version_tag) {
           var html = '<a href="'+version_url+'">'+version+'</a>';
           html += ' <a href="'+version_tag.url+'" title="Matching tag found in repository"><i class="fa fa-tag"></i></a>';
-          checkForgeCommits(name, r, version, r.github.user, version_tag.tag, r.github.user, new_ref, html);
+          checkForgeCommits(name, r, version, r.github.user, version_tag.tag, r.github.user, new_ref, html, true);
         } else {
           // No tag found, it's a warning
           html += ' <a href="'+r.info.tags_url+'" title="No matching tag '+version+' found in repository"><i class="fa fa-warning"></i></a>';
@@ -51,11 +51,11 @@ dashboard.latest_version = function(name) {
       version_url = r.github.uri;
     }
     html = '<a href="'+version_url+'">'+version+'</a>';
-    checkForgeCommits(name, r, version, base_user, version, r.github.user, r.info.ref, html);
+    checkForgeCommits(name, r, version, base_user, version, r.github.user, r.info.ref, html, false);
   }
 }
 
-function checkForgeCommits(name, tags_r, version, base_user, base_ref, new_user, new_ref, html) {
+function checkForgeCommits(name, tags_r, version, base_user, base_ref, new_user, new_ref, html, check_release) {
   var state;
   var customkey;
 
@@ -83,6 +83,10 @@ function checkForgeCommits(name, tags_r, version, base_user, base_ref, new_user,
         html += ' <span title="Branch '+new_ref+' is identical to tag '+version+'"><i class="fa fa-check"></i></span>';
         state = 'ok';
         customkey = '13';
+        if (new_user === account && check_release) {
+          // Check if a new release is due
+          checkForgeCommits(name, tags_r, version, new_user, base_ref, new_user, 'master', html);
+        }
       } else {
         html += ' <span title="Branch '+new_ref+' has comparison status with tag '+version+' set to '+diff.status+'"><i class="fa fa-warning"></i></span>';
         state = 'unknown';

@@ -1,42 +1,52 @@
 dashboard.latest_version = function(name, repo) {
   var r = repositories[name];
   var html;
+  console.log(r);
+  
   if (r.forge) {
-    version = r.forge.current_release.version;
-    version_url = 'https://forge.puppetlabs.com/'+r.forge.current_release.module.owner.username+'/'+r.forge.name+'/'+version;
+    var version = r.forge.current_release.version;
+    var version_url = 'https://forge.puppetlabs.com/'+r.forge.current_release.module.owner.username+'/'+r.forge.name+'/'+version;
     html = '<a href="'+version_url+'">'+version+'</a>';
-
-    if (r.info.ref) {
+    if (r.info.version === version) {
+      // All OK
+      updateCell(name, 'latest_version', html);
+    } else {
       // compare with github/tags
       r.repo.listTags(function(err, tags) {
         if (err) {
           html += ' <a href="'+r.info.tags_url+'" title="Failed to get tags"><i class="fa fa-warning"></i></a>';
           updateCell(name, 'latest_version', html);
         } else {
+          var base_ref;
+          if (r.info.ref) {
+            // Use ref as base
+            base_ref = r.info.ref;
+          } else {
+            base_ref_tag = versionTagURL(tags, r.info.version);
+            if (base_ref_tag) {
+              base_ref = base_ref_tag.tag;
+            } else {
+              // No tag found, it's a warning
+              html += ' <a href="'+r.info.tags_url+'" title="No matching tag '+r.info.version+' found in repository"><i class="fa fa-warning"></i></a>';
+              updateCell(name, 'latest_version', html, 'warn', '2');
+            }
+          }
           var version_tag = versionTagURL(tags, version);
           if (version_tag) {
             var html = '<a href="'+version_url+'">'+version+'</a>';
             html += ' <a href="'+version_tag.url+'" title="Matching tag found in repository"><i class="fa fa-tag"></i></a>';
-            checkForgeCommits(name, repo, r, version, version_url, version_tag.tag, r.github.user, r.info.ref, html);
+            checkForgeCommits(name, repo, r, version, version_url, version_tag.tag, r.github.user, base_ref, html);
           } else {
             // No tag found, it's a warning
-            html += ' <a href="'+r.info.tags_url+'" title="No matching tag found in repository"><i class="fa fa-warning"></i></a>';
+            html += ' <a href="'+r.info.tags_url+'" title="No matching tag '+version+' found in repository"><i class="fa fa-warning"></i></a>';
             updateCell(name, 'latest_version', html, 'warn', '2');
           }
         }
       });
-    } else {
-      if (r.info.version === version) {
-        // All OK
-        updateCell(name, 'latest_version', html);
-      } else {
-        // TODO: compare versions really
-        html += ' <a href="#" title="Version mismatch!"><i class="fa fa-warning"></i></a>';
-        updateCell(name, 'latest_version', html, 'warn', '2');
-      }
     }
   } else {
     // Nothing on forge, compare with account/master
+    console.log(name+": Checking against master");
     checkForgeCommits(name, repo, r, r.info.ref, '', r.info.ref, r.github.user, 'master', '');
   }
 }
@@ -45,6 +55,7 @@ function checkForgeCommits(name, repo, tags_r, version, url, base_version, ref_u
   var state;
   var customkey;
 
+  console.log(name+": comparing "+tags_r.github.user+':'+base_version+' with '+ref_user+':'+b);
   // get diff
   tags_r.repo.compare(tags_r.github.user+':'+base_version, ref_user+':'+b, function(err, diff) {
     if (err) {

@@ -10,7 +10,6 @@ var token;
 var account;
 var refresh;
 var refresh_randomize;
-var reposFunc;
 var repoHeads;
 var plugin_options;
 
@@ -281,16 +280,6 @@ var plugin_options;
     
   function listRepos(repos) {
     var spinner = document.getElementById('spinner');
-  
-    /*
-    if (err) {
-      spinner.style.display = 'none';
-      var err_msg = JSON.parse(err.request.responseText, function(key, value) { return value;});
-      dispError('Error '+err.request.status+' ('+err.request.statusText+'): '+err_msg.message);
-      return;
-    }
-    */
-  
     var reposTable = document.getElementById('repositories');
     var reposTableBody = document.getElementsByTagName('tbody')[0];
   
@@ -342,8 +331,20 @@ var plugin_options;
     // auto-refresh
     if (refresh > 0) {
       refresh_time = refresh + Math.random()*refresh*refresh_randomize;
-      setTimeout(function() {reposFunc(account, listRepos)}, refresh_time);
+      setTimeout(function() {updateModulesList(account, r10k_repo)}, refresh_time);
     }
+  }
+
+  function updateModuleList(account, r10k_repo) {
+    var pm_common = github.getRepo(account, r10k_repo);
+    pm_common.contents('master', 'Puppetfile', function(err, contents) {
+      if(err) {
+        dispError('Could not find Puppetfile.');
+      } else {
+        var modules = parsePuppetfile(contents);
+        listRepos(modules);
+      }
+    });
   }
  
   function initRepo(name, heads) {
@@ -388,7 +389,7 @@ var plugin_options;
     }
  
     this.refreshList = function() {
-      reposFunc(account, listRepos);
+      updateModuleList(account, r10k_repo);
     }
   
     this.authRemove = function() {
@@ -468,16 +469,7 @@ var plugin_options;
     
       // TODO: get rid of user/org code
       reposTableBody.appendChild(spinner);
-      var pm_common = github.getRepo(org, r10k_repo);
-      pm_common.contents('master', 'Puppetfile', function(err, contents) {
-        if(err) {
-          dispError('Could not find Puppetfile.');
-        } else {
-          var modules = parsePuppetfile(contents);
-          listRepos(modules);
-        }
-      });
-    
+      updateModuleList(account, r10k_repo);
       sorttable.makeSortable(reposTable);
       this.sortByState();
     };

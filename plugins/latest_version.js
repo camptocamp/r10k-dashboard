@@ -45,7 +45,10 @@ dashboard.latest_version = function(name, repo) {
     }
   } else {
     // Nothing on forge, compare with account/master
-    checkForgeCommits(name, repo, r, r.info.ref, '', r.info.ref, r.github.user, 'master', '');
+    var version = 'master';
+    var version_url = r.github.uri;
+    html = '<a href="'+version_url+'">'+version+'</a>';
+    checkForgeCommits(name, repo, r, version, version_url, r.info.ref, r.github.user, r.info.ref, html);
   }
 }
 

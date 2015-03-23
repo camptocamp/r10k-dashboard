@@ -1,5 +1,12 @@
 dashboard.issues = function(name) {
   r = repositories[name];
+
+  if (r.github.user !== account) {
+    // Only relevant if it's our own module
+    updateCell(name, 'issues', 'N/A');
+    return;
+  }
+
   github.getIssues(r.github.user, r.github.repo).list(null, function(err, issues) {
     var status;
     var text;

@@ -1,5 +1,12 @@
 dashboard.pulls = function(name) {
   var r = repositories[name];
+
+  if (r.github.user !== account) {
+    // Only relevant if it's our own module
+    updateCell(name, 'pulls', 'N/A');
+    return;
+  }
+
   r.github.repo_obj.listPulls('open', function(err, pulls) {
     var status;
     var customkey = 0;

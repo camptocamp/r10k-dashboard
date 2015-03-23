@@ -366,6 +366,7 @@ var plugin_options;
   var PuppetDashboard = function(options) {
     var org = options.org;
     var user = options.user;
+    var r10k_repo = options.r10k_repo;
     refresh = options.refresh || 1800000; // 30 minutes
     refresh_randomize = options.refresh_randomize || 0.5; // up to 15 minutes
     var filter = options.filter;
@@ -467,7 +468,7 @@ var plugin_options;
     
       // TODO: get rid of user/org code
       reposTableBody.appendChild(spinner);
-      var pm_common = github.getRepo(org, 'puppetmaster-common');
+      var pm_common = github.getRepo(org, r10k_repo);
       pm_common.contents('master', 'Puppetfile', function(err, contents) {
         if(err) {
           dispError('Could not find Puppetfile.');

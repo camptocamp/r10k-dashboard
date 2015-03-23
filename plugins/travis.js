@@ -3,7 +3,7 @@ dashboard.travis = function(name) {
 
   if (r.github.user !== account) {
     // Only relevant if it's our own module
-    updateCell(name, 'travis', 'N/A');
+    updateCell(name, 'travis', 'N/A', 'unknown', '10');
     return;
   }
 

@@ -32,7 +32,7 @@ dashboard.issues = function(name) {
         status = 'ok';
       }
     }
-    html = r.github.repo_obj.info.html_url+'/issues" title="'+title+'">'+text+'</a>';
+    html = '<a href="'+r.github.repo_obj.info.html_url+'/issues" title="'+title+'">'+text+'</a>';
     updateCell(name, 'issues', html, status, customkey);
   });
 }

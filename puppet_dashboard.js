@@ -313,8 +313,8 @@ var plugin_options;
         reposTableBody.appendChild(repoLine);
   
         initRepo(name, repoHeads);
-        updateRepo(name);
       }
+      updateRepo(name);
     }
     filtered_repos.sort();
   

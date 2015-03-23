@@ -6,21 +6,33 @@ dashboard.latest_version = function(name, repo) {
     version_url = 'https://forge.puppetlabs.com/'+r.forge.current_release.module.owner.username+'/'+r.forge.name+'/'+version;
     html = '<a href="'+version_url+'">'+version+'</a>';
 
-    r.repo.listTags(function(err, tags) {
-      if (err) {
-        html += ' <a href="'+tags_r.info.tags_url+'" title="Failed to get tags"><i class="fa fa-warning"></i></a>';
+    if (r.info.ref) {
+      // compare with github/tags
+      r.repo.listTags(function(err, tags) {
+        if (err) {
+          html += ' <a href="'+tags_r.info.tags_url+'" title="Failed to get tags"><i class="fa fa-warning"></i></a>';
+          updateCell(name, 'latest_version', html);
+        } else {
+          var version_tag = versionTagURL(tags, version);
+          if (version_tag) {
+            checkForgeTagsCommits(name, repo, r, version, version_url, version_tag);
+          } else {
+            // No tag found, it's a warning
+            html += ' <a href="'+r.info.tags_url+'" title="No matching tag found in repository"><i class="fa fa-warning"></i></a>';
+            updateCell(name, 'latest_version', html, 'warn', '2');
+          }
+        }
+      });
+    } else {
+      if (r.info.version === version) {
+        // All OK
         updateCell(name, 'latest_version', html);
       } else {
-        var version_tag = versionTagURL(tags, version);
-        if (version_tag) {
-          checkForgeTagsCommits(name, repo, r, version, version_url, version_tag);
-        } else {
-          // No tag found, it's a warning
-          html += ' <a href="'+r.info.tags_url+'" title="No matching tag found in repository"><i class="fa fa-warning"></i></a>';
-          updateCell(name, 'latest_version', html, 'warn', '2');
-        }
+        // TODO: compare versions really
+        html += ' <a href="#" title="Version mismatch!"><i class="fa fa-warning"></i></a>';
+        updateCell(name, 'latest_version', html, 'warn', '2');
       }
-    });
+    }
   } else {
     updateCell(name, 'latest_version', 'N/A');
   }

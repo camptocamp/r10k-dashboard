@@ -36,8 +36,8 @@ dashboard.latest_version = function(name, repo) {
       }
     }
   } else {
-    // TODO: Nothing on forge, compare with account/master
-    updateCell(name, 'latest_version', 'N/A');
+    // Nothing on forge, compare with account/master
+    checkForgeCommits(name, repo, r, r.info.ref, '', r.info.ref, r.github.user, 'master', '');
   }
 }
 

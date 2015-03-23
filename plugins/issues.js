@@ -15,7 +15,6 @@ dashboard.issues = function(name) {
         status = 'warn';
       }
     } else {
-            console.log(issues);
       var l = 0;
       for (var i=0; i < issues.length; i++) {
         if (! issues[i].pull_request) {

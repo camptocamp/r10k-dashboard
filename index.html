@@ -3,31 +3,37 @@
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
     <link href="style.css" rel="stylesheet" type="text/css">
     <link rel="icon" type="image/png" href="ghdashboard-favicon.png" />
-    <title>Puppet Modules Dashboard</title>
+    <title>R10K Dashboard</title>
   </head>
   <body>
     <div id="header">
       <a href="javascript:dash.sortByState();"><i class="fa fa-sort-amount-desc fa-2x" title="Sort by state"></i></a>
       <a href="javascript:dash.refreshList();"><i class="fa fa-refresh fa-2x" title="Refresh list"></i></a>
-      <a id="auth_link" href="https://github.com/login/oauth/authorize?client_id=YOUR_CLIENT_ID" target=_blank><i class="fa fa-sign-in fa-2x" title="Sign in with Github"></i></a>
       <a id="auth_link_priv" href="https://github.com/login/oauth/authorize?client_id=YOUR_CLIENT_ID&scope=repo" style="display:none" target=_blank><i class="fa fa-lock fa-2x" title="Allow access to Github private repositories"></i></a>
       <a id="auth_remove" style="display:none;" href="javascript:dash.authRemove();"><i class="fa fa-sign-out fa-2x" title="Sign out"></i></a>
       <br />
-      <div id='total'></div> <div id='total_score'></div>
+      <div id='total'></div>
+      <div id='total_score'></div>
+    </div>
+    <div id="auth_link" style="position:absolute;z-index:99;margin:0 auto; width:800px; height:300px; background: white; text-align: center;">
+      <a href="https://github.com/login/oauth/authorize?client_id=YOUR_CLIENT_ID" target=_blank>
+        <img src="http://www.wakanda.org/sites/default/files/blog/blog-github.png" /><br />
+        Sign in with Github <i class="fa fa-sign-in fa-2x" title="Sign in with Github"></i>
+      </a>
     </div>
     <table id='repositories'>
       <thead>
         <tr>
           <th>Module name</th>
-          <th class="plugin:origin">Origin</th>
-          <th class="plugin:status">Status</th>
-          <th class="plugin:default_branch">Default Branch</th>
-          <th class="plugin:pulls">Pull Requests</th>
-          <th class="plugin:issues">Issues</th>
-          <th class="plugin:travis">Travis CI</th>
-          <th class="plugin:forge">Forge</th>
-          <!--<th class="plugin:hooks">Github Hooks</th>-->
-          <th>Refresh</th>
+          <th class="plugin:priv"><i class="fa fa-lock" title="Private"></i></th>
+          <th class="plugin:pinned_version"><i class="fa" title="Pinned">Pin</i></th>
+          <th class="plugin:latest_version"><i class="fa" title="Latests">Latest</i></th>
+          <th class="plugin:pulls sorttable_numeric"><i class="fa fa-code" title="Pull Requests"></i></th>
+          <th class="plugin:issues sorttable_numeric"><i class="fa fa-bug" title="Issues"></i></th>
+          <th class="plugin:travis sorttable_numeric"><i class="fa fa-cogs" title="Travis CI build"></i></th>
+          <th class="plugin:endorsement sorttable_numeric"><i class="fa fa-star" title="Endorsement"></i></th>
+	        <!-- last column is for state+refresh -->
+          <th class="sorttable_numeric"></th>
         </tr>
       </thead>
       <tbody>
@@ -38,7 +44,7 @@
     <script src="lib/github/lib/underscore-min.js"></script>
     <script src="lib/github/github.js"></script>
     <script src="lib/sorttable.js"></script>
-    <script src="dashboard.js"></script>
+    <script src="puppet_dashboard.js"></script>
     <script language="JavaScript">
 function getParameterByName(name) {
   name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
@@ -47,15 +53,15 @@ function getParameterByName(name) {
   return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
-var org = getParameterByName('org') || 'camptocamp';
-var filter = getParameterByName('filter') || '^puppet-';
+var filter = getParameterByName('filter') || '.';
 
-var dash = new GHDashboard({
-  org: org,
+var dash = new PuppetDashboard({
+  org: '<YOUR_GITHUB_ORG>',
+  r10k_repo: '<YOUR_GITHUB_R10k_REPO>',
   filter: filter,
   autoload: true
 });
-document.title = 'Augeasproviders repositories for '+org;
+document.title = 'R10k report for '+org;
     </script>
   </body>
 </html>

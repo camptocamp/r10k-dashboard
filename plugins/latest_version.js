@@ -10,12 +10,14 @@ dashboard.latest_version = function(name, repo) {
       // compare with github/tags
       r.repo.listTags(function(err, tags) {
         if (err) {
-          html += ' <a href="'+tags_r.info.tags_url+'" title="Failed to get tags"><i class="fa fa-warning"></i></a>';
+          html += ' <a href="'+r.info.tags_url+'" title="Failed to get tags"><i class="fa fa-warning"></i></a>';
           updateCell(name, 'latest_version', html);
         } else {
           var version_tag = versionTagURL(tags, version);
           if (version_tag) {
-            checkForgeTagsCommits(name, repo, r, version, version_url, version_tag);
+            var html = '<a href="'+version_url+'">'+version+'</a>';
+            html += ' <a href="'+version_tag.url+'" title="Matching tag found in repository"><i class="fa fa-tag"></i></a>';
+            checkForgeTagsCommits(name, repo, r, version, version_url, version_tag, html);
           } else {
             // No tag found, it's a warning
             html += ' <a href="'+r.info.tags_url+'" title="No matching tag found in repository"><i class="fa fa-warning"></i></a>';
@@ -39,15 +41,13 @@ dashboard.latest_version = function(name, repo) {
   }
 }
 
-function checkForgeTagsCommits(name, repo, tags_r, version, url, version_tag) {
-  var b = repo.default_branch;
-  var html = '<a href="'+url+'">'+version+'</a>';
-  html += ' <a href="'+version_tag.url+'" title="Matching tag found in repository"><i class="fa fa-tag"></i></a>';
+function checkForgeTagsCommits(name, repo, tags_r, version, url, version_tag, html) {
+  var b = tags_r.info.ref;
   var state;
   var customkey;
 
   // get diff
-  tags_r.repo.compare(tags_r.github.user+':'+version_tag.tag, account+':'+b, function(err, diff) {
+  tags_r.repo.compare(tags_r.github.user+':'+version_tag.tag, tags_r.github.user+':'+b, function(err, diff) {
     if (err) {
       html += ' <span title="Failed to get commits since tag"><i class="fa fa-warning"></i></span>';
       updateCell(name, 'latest_version', 'status', html, 'err', '15');

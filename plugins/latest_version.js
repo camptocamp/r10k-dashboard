@@ -6,44 +6,38 @@ dashboard.latest_version = function(name) {
     var version = r.forge.current_release.version;
     var version_url = 'https://forge.puppetlabs.com/'+r.forge.current_release.module.owner.username+'/'+r.forge.name+'/'+version;
     html = '<a href="'+version_url+'">'+version+'</a>';
-    if (r.info.version === version) {
-      // All OK
-      html += ' <span title="Versions are identical"><i class="fa fa-check"></i></span>';
-      updateCell(name, 'latest_version', html, 'ok', '13');
-    } else {
-      // compare with github/tags
-      r.repo.listTags(function(err, tags) {
-        if (err) {
-          html += ' <a href="'+r.info.tags_url+'" title="Failed to get tags"><i class="fa fa-warning"></i></a>';
-          updateCell(name, 'latest_version', html, 'warn', '1');
+    // compare with github/tags
+    r.repo.listTags(function(err, tags) {
+      if (err) {
+        html += ' <a href="'+r.info.tags_url+'" title="Failed to get tags"><i class="fa fa-warning"></i></a>';
+        updateCell(name, 'latest_version', html, 'warn', '1');
+      } else {
+        var new_ref;
+        if (r.info.ref) {
+          // Use ref as base
+          new_ref = r.info.ref;
         } else {
-          var new_ref;
-          if (r.info.ref) {
-            // Use ref as base
-            new_ref = r.info.ref;
-          } else {
-            new_ref_tag = versionTagURL(tags, r.info.version);
-            if (new_ref_tag) {
-              new_ref = new_ref_tag.tag;
-            } else {
-              // No tag found, it's a warning
-              html += ' <a href="'+r.info.tags_url+'" title="No matching tag '+r.info.version+' found in repository"><i class="fa fa-warning"></i></a>';
-              updateCell(name, 'latest_version', html, 'warn', '2');
-            }
-          }
-          var version_tag = versionTagURL(tags, version);
-          if (version_tag) {
-            var html = '<a href="'+version_url+'">'+version+'</a>';
-            html += ' <a href="'+version_tag.url+'" title="Matching tag found in repository"><i class="fa fa-tag"></i></a>';
-            checkForgeCommits(name, r, version, r.github.user, version_tag.tag, r.github.user, new_ref, html);
+          new_ref_tag = versionTagURL(tags, r.info.version);
+          if (new_ref_tag) {
+            new_ref = new_ref_tag.tag;
           } else {
             // No tag found, it's a warning
-            html += ' <a href="'+r.info.tags_url+'" title="No matching tag '+version+' found in repository"><i class="fa fa-warning"></i></a>';
-            updateCell(name, 'latest_version', html, 'warn', '3');
+            html += ' <a href="'+r.info.tags_url+'" title="No matching tag '+r.info.version+' found in repository"><i class="fa fa-warning"></i></a>';
+            updateCell(name, 'latest_version', html, 'warn', '2');
           }
         }
-      });
-    }
+        var version_tag = versionTagURL(tags, version);
+        if (version_tag) {
+          var html = '<a href="'+version_url+'">'+version+'</a>';
+          html += ' <a href="'+version_tag.url+'" title="Matching tag found in repository"><i class="fa fa-tag"></i></a>';
+          checkForgeCommits(name, r, version, r.github.user, version_tag.tag, r.github.user, new_ref, html);
+        } else {
+          // No tag found, it's a warning
+          html += ' <a href="'+r.info.tags_url+'" title="No matching tag '+version+' found in repository"><i class="fa fa-warning"></i></a>';
+          updateCell(name, 'latest_version', html, 'warn', '3');
+        }
+      }
+    });
   } else {
     // Nothing on forge, compare with account/master
     var version = 'master';
@@ -78,7 +72,6 @@ function checkForgeCommits(name, tags_r, version, base_user, base_ref, new_user,
         state = 'warn';
         customkey = '11';
       } else if (diff.status == 'behind') {
-        // /!\ using invertDiffURL from status plugin
         diff_url = invertDiffURL(diff.html_url);
         html += ' <a href="'+diff_url+'" title="Branch '+new_ref+' is '+diff.behind_by+' commits behind of tag '+version+'"><i class="fa fa-angle-double-down"></i></a>';
         state = 'warn';

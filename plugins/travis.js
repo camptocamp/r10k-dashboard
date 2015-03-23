@@ -1,6 +1,14 @@
 dashboard.travis = function(name) {
+  var r = repositories[name];
+
+  if (r.github.user !== account) {
+    // Only relevant if it's our own module
+    updateCell(name, 'travis', 'N/A');
+    return;
+  }
+
   var status = 'unknown';
-  var repo = repositories[name].github.repo_obj.info;
+  var repo = r.github.repo_obj.info;
   if (repo.private) {
     var access_token = readCookie('travis_access_token');
     if (access_token) {

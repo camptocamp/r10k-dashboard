@@ -59,7 +59,6 @@ function checkForgeCommits(name, tags_r, version, base_user, base_ref, new_user,
   var state;
   var customkey;
 
-  console.log("Comparing "+base_user+':'+base_ref+' with '+new_user+':'+new_ref);
   // get diff
   tags_r.repo.compare(base_user+':'+base_ref, new_user+':'+new_ref, function(err, diff) {
     if (err) {

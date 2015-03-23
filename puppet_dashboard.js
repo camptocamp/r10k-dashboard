@@ -181,7 +181,7 @@ var plugin_options;
 
   function parsePuppetfile(contents) {
     // Split each entry by newline, unless preceded by a comma
-    var entries = contents.match(/[^\n][\s\S]+?[^,](?=\s*\n\s*)/g);
+    var entries = atob(contents.content).match(/[^\n][\s\S]+?[^,](?=\s*\n\s*)/g);
     var mods = new Array();
     for (var i=0; i<entries.length; i++) {
       if (/^mod\s/.test(entries[i])) {

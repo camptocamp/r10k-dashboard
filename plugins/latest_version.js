@@ -1,7 +1,6 @@
 dashboard.latest_version = function(name, repo) {
   var r = repositories[name];
   var html;
-  console.log(r);
   
   if (r.forge) {
     var version = r.forge.current_release.version;
@@ -46,7 +45,6 @@ dashboard.latest_version = function(name, repo) {
     }
   } else {
     // Nothing on forge, compare with account/master
-    console.log(name+": Checking against master");
     checkForgeCommits(name, repo, r, r.info.ref, '', r.info.ref, r.github.user, 'master', '');
   }
 }
@@ -55,7 +53,6 @@ function checkForgeCommits(name, repo, tags_r, version, url, base_version, ref_u
   var state;
   var customkey;
 
-  console.log(name+": comparing "+tags_r.github.user+':'+base_version+' with '+ref_user+':'+b);
   // get diff
   tags_r.repo.compare(tags_r.github.user+':'+base_version, ref_user+':'+b, function(err, diff) {
     if (err) {
@@ -96,4 +93,9 @@ function versionTagURL(tags, version) {
       return { 'url': tags[i].commit.url, 'tag': tags[i].name };
     }
   }
+}
+
+function invertDiffURL(url) {
+  var base = url.match(/\/([^/]+)\.\.\./);
+  return url.replace(base[0], '/')+'...'+base[1];
 }

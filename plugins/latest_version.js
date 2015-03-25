@@ -28,7 +28,6 @@ dashboard.latest_version = function(name) {
         }
         var version_tag = versionTagURL(tags, version);
         if (version_tag) {
-          var html = '<a href="'+version_url+'">'+version+'</a>';
           html += ' <a href="'+version_tag.url+'" title="Matching tag found in repository"><i class="fa fa-tag"></i></a>';
           checkForgeCommits(name, r, version, r.github.user, version_tag.tag, r.github.user, new_ref, html, true);
         } else {

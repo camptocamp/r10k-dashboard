@@ -9,7 +9,7 @@ dashboard.latest_version = function(name) {
     // compare with github/tags
     r.repo.listTags(function(err, tags) {
       if (err) {
-        html += ' <a href="'+r.info.tags_url+'" title="Failed to get tags"><i class="fa fa-warning"></i></a>';
+        html += ' <a href="'+r.github.repo_obj.info.tags_url+'" title="Failed to get tags"><i class="fa fa-warning"></i></a>';
         updateCell(name, 'latest_version', html, 'warn', '1');
       } else {
         var new_ref;
@@ -22,7 +22,7 @@ dashboard.latest_version = function(name) {
             new_ref = new_ref_tag.tag;
           } else {
             // No tag found, it's a warning
-            html += ' <a href="'+r.info.tags_url+'" title="No matching tag '+r.info.version+' found in repository"><i class="fa fa-warning"></i></a>';
+            html += ' <a href="'+r.github.repo_obj.info.tags_url+'" title="No matching tag '+r.info.version+' found in repository"><i class="fa fa-warning"></i></a>';
             updateCell(name, 'latest_version', html, 'warn', '2');
           }
         }

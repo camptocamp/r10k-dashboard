@@ -11,6 +11,7 @@ dashboard.latest_version = function(name) {
       if (err) {
         html += ' <a href="'+r.github.repo_obj.info.tags_url+'" title="Failed to get tags"><i class="fa fa-warning"></i></a>';
         updateCell(name, 'latest_version', html, 'warn', '1');
+        return;
       } else {
         var new_ref;
         if (r.info.ref) {
@@ -24,6 +25,7 @@ dashboard.latest_version = function(name) {
             // No tag found, it's a warning
             html += ' <a href="'+r.github.repo_obj.info.tags_url+'" title="No matching tag '+r.info.version+' found in repository"><i class="fa fa-warning"></i></a>';
             updateCell(name, 'latest_version', html, 'warn', '2');
+            return;
           }
         }
         var version_tag = versionTagURL(tags, version);
@@ -34,6 +36,7 @@ dashboard.latest_version = function(name) {
           // No tag found, it's a warning
           html += ' <a href="'+r.info.tags_url+'" title="No matching tag '+version+' found in repository"><i class="fa fa-warning"></i></a>';
           updateCell(name, 'latest_version', html, 'warn', '3');
+          return;
         }
       }
     });
@@ -63,6 +66,7 @@ function checkForgeCommits(name, tags_r, version, base_user, base_ref, new_user,
     if (err) {
       html += ' <span title="Failed to get commits since tag"><i class="fa fa-warning"></i></span>';
       updateCell(name, 'latest_version', html, 'err', '15');
+      return;
     } else {
       if (diff.status == 'ahead') {
         diff_url = diff.html_url;
@@ -92,6 +96,7 @@ function checkForgeCommits(name, tags_r, version, base_user, base_ref, new_user,
       }
     }
     updateCell(name, 'latest_version', html, state, customkey);
+    return;
   });
 }
 

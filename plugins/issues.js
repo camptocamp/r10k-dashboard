@@ -77,7 +77,8 @@ function updateIssueCell(name, plugin, r, title, text, status, customkey) {
 
 function issueStatus(issue, comments, collabs) {
   console.log("Checking status for issue "+issue.number);
-  for (var i=0; i < comments.length; i++) {
+  // Newer comments are at the end of the list
+  for (var i=comments.length-1; i >= 0; i--) {
     if (comments[i].issue_url === issue.url) {
       // Most recent event for issue
       for (var j=0; j < collabs.length; j++) {

@@ -34,7 +34,7 @@ function listIssues(name, plugin, incl_pulls) {
         console.log(plugin+": getting collabs");
         repoCollaborators(r.repo, function(collabs) {
           var l = 0;
-          var title = 'No actions needed';
+          var title = '';
           for (var i=0; i < issues.length; i++) {
             var issue = issues[i];
             // Check if we include pull requests
@@ -51,6 +51,10 @@ function listIssues(name, plugin, incl_pulls) {
                     l++;
                     title += issue_status.message+"\n";
                     break;
+                  case 'old_comment':
+                    l++;
+                    title += issue_status.message+"\n";
+                    break;
                 }
             }
           }
@@ -59,6 +63,7 @@ function listIssues(name, plugin, incl_pulls) {
           if (l > 0) {
             status = 'warn';
           } else {
+            title = 'No actions needed';
             status = 'ok';
           }
           console.log(plugin+": updating cell");
@@ -76,10 +81,21 @@ function updateIssueCell(name, plugin, r, title, text, status, customkey) {
 
 function issueStatus(issue, comments, collabs) {
   console.log("Checking status for issue "+issue.number);
+
   // Newer comments are at the end of the list
   for (var i=comments.length-1; i >= 0; i--) {
     if (comments[i].issue_url === issue.url) {
-      // Most recent event for issue
+      // Check that last comment was made less than 30 days ago
+      var updated = new Date(comments[i].updated_at);
+      var now = new Date();
+      if ((now-updated)/(1000*3600*24*30) > 1) {
+        return {
+          'status': 'old_comment',
+          'message': 'issue '+issue.number+' was last commented on '+updated.toDateString()
+        };
+      }
+
+      // Check author of last comment
       for (var j=0; j < collabs.length; j++) {
         if (comments[i].user.login === collabs[j].login ) {
           return {

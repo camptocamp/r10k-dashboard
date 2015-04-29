@@ -1,9 +1,13 @@
 dashboard.issues = function(name) {
+  listIssues(name, 'issues', false);
+}
+
+function listIssues(name, plugin, incl_pulls) {
   r = repositories[name];
 
   if (r.github.user !== account) {
     // Only relevant if it's our own module
-    updateCell(name, 'issues', 'N/A');
+    updateCell(name, plugin, 'N/A');
     return;
   }
 
@@ -22,19 +26,21 @@ dashboard.issues = function(name) {
         text = 'ERR';
         status = 'warn';
       }
-      updateIssueCell(name, r, title, text, status, customkey);
+      updateIssueCell(name, plugin, r, title, text, status, customkey);
     } else {
       // Get issues comments
+      console.log(plugin+": getting comments");
       issue.comments(null, function(err, comments) {
         var l = 0;
         var t = 0;
+        console.log(plugin+": getting collabs");
         repoCollaborators(r.repo, function(collabs) {
           var title = '';
           for (var i=0; i < issues.length; i++) {
             var issue = issues[i];
-            if (! issue.pull_request) {
+            // Check if we include pull requests
+            if (!!issue.pull_request === incl_pulls) {
               t++;
-              console.log(issue.number+' is not a pull request');
               // Check if issue was updated
                 issue_status = issueStatus(issue, comments, collabs);
                 switch(issue_status.status) {
@@ -55,19 +61,21 @@ dashboard.issues = function(name) {
           } else {
             status = 'ok';
           }
-          updateIssueCell(name, r, title, text, status, customkey);
+          console.log(plugin+": updating cell");
+          updateIssueCell(name, plugin, r, title, text, status, customkey);
         });
       });
     }
   });
 }
 
-function updateIssueCell(name, r, title, text, status, customkey) {
-  html = '<a href="'+r.github.repo_obj.info.html_url+'/issues" title="'+title+'">'+text+'</a>';
-  updateCell(name, 'issues', html, status, customkey);
+function updateIssueCell(name, plugin, r, title, text, status, customkey) {
+  html = '<a href="'+r.github.repo_obj.info.html_url+'/'+plugin+'" title="'+title+'">'+text+'</a>';
+  updateCell(name, plugin, html, status, customkey);
 }
 
 function issueStatus(issue, comments, collabs) {
+  console.log("Checking status for issue "+issue.number);
   for (var i=0; i < comments.length; i++) {
     if (comments[i].issue_url === issue.url) {
       // Most recent event for issue

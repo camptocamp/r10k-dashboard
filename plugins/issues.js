@@ -7,7 +7,7 @@ function listIssues(name, plugin, incl_pulls) {
 
   if (r.github.user !== account) {
     // Only relevant if it's our own module
-    updateCell(name, plugin, 'N/A');
+    updateCell(name, plugin, 'N/A', 'ok', '-1');
     return;
   }
 
@@ -15,10 +15,9 @@ function listIssues(name, plugin, incl_pulls) {
   issue.list(null, function(err, issues) {
     var status;
     var text;
-    var title;
     var customkey = 0;
     if (err) {
-      title = JSON.parse(err.request.response).message;
+      var title = JSON.parse(err.request.response).message;
       if (err.error == 410) {
         text = 'N/A';
         status = 'ok';
@@ -31,11 +30,11 @@ function listIssues(name, plugin, incl_pulls) {
       // Get issues comments
       console.log(plugin+": getting comments");
       issue.comments(null, function(err, comments) {
-        var l = 0;
         var t = 0;
         console.log(plugin+": getting collabs");
         repoCollaborators(r.repo, function(collabs) {
-          var title = '';
+          var l = 0;
+          var title = 'No actions needed';
           for (var i=0; i < issues.length; i++) {
             var issue = issues[i];
             // Check if we include pull requests

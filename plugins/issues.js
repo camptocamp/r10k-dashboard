@@ -55,7 +55,7 @@ function listIssues(name, plugin, incl_pulls) {
             }
           }
           var text = l+'/'+t;
-          var customkey = l;
+          var customkey = 10*l+t;
           if (l > 0) {
             status = 'warn';
           } else {

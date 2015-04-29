@@ -90,7 +90,7 @@ function issueStatus(issue, comments, collabs) {
       // Comment is not by a collaborator
       return {
         'status': 'new_comments',
-        'message': 'New comment by '+comments[j].user.login+' on issue '+issue.number
+        'message': 'New comment by '+comments[i].user.login+' on issue '+issue.number
       };
     }
   }

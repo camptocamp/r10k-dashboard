@@ -278,6 +278,17 @@ var plugin_options;
       setTimeout(function() {updateRepo(name)}, refresh_time);
     }
   }
+
+  function repoCollaborators(repo, cb) {
+    if (repo.collaborators) {
+      cb(repo.collaborators);
+    } else {
+      r.repo.listCollaborators(null, function(err, collabs) {
+        repo.collaborators = collabs;
+        cb(collabs);
+      });
+    }
+  }
     
   function listRepos(repos, refresh) {
     var spinner = document.getElementById('spinner');
@@ -503,6 +514,7 @@ var plugin_options;
     // PuppetDashboard = exports;
     module.exports = PuppetDashboard;
     module.exports = updateRepo;
+    module.exports = repoCollaborators;
     module.exports = listRepos;
     module.exports = readCookie;
     module.exports = addCookie;
@@ -511,6 +523,7 @@ var plugin_options;
     window.PuppetDashboard = PuppetDashboard;
     window.updateRepo = updateRepo;
     window.refreshModule = refreshModule;
+    window.repoCollaborators = repoCollaborators;
     window.listRepos = listRepos;
     window.readCookie = readCookie;
     window.addCookie = addCookie;

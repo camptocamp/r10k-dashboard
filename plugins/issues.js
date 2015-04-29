@@ -3,7 +3,7 @@ dashboard.issues = function(name) {
 }
 
 function listIssues(name, plugin, incl_pulls) {
-  r = repositories[name];
+  var r = repositories[name];
 
   if (r.github.user !== account) {
     // Only relevant if it's our own module

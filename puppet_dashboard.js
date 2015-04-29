@@ -24,7 +24,7 @@ var plugin_options;
       var classes = cell.className.replace(/unknown|err|warn|ok/, '');
       cell.className = classes+' '+state;
     }
-    if (customkey) {
+    if (typeof customkey !== 'undefined') {
       cell.setAttribute('sorttable_customkey', customkey);
     }
     computeState(repoLine, state);

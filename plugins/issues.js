@@ -50,6 +50,7 @@ function listIssues(name, plugin, incl_pulls) {
                     break;
                   case 'no_comments':
                     l++;
+                    title += issue_status.message+"\n";
                     break;
                 }
             }

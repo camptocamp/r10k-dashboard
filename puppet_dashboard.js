@@ -283,7 +283,7 @@ var plugin_options;
     if (repo.collaborators) {
       cb(repo.collaborators);
     } else {
-      repo.listCollaborators(null, function(err, collabs) {
+      repo.listCollaborators(function(err, collabs) {
         repo.collaborators = collabs;
         cb(collabs);
       });

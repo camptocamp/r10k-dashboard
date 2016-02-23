@@ -1,9 +1,9 @@
-FROM nginx
+FROM php:5-apache
 
 MAINTAINER raphael.pinson@camptocamp.com
 
 
-COPY html /usr/share/nginx/html/r10k-dashboard
+COPY html /var/www/html/r10k-dashboard
 COPY docker-entrypoint.d /docker-entrypoint.d
 COPY docker-entrypoint.sh /
 

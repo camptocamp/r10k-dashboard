@@ -8,4 +8,4 @@ COPY docker-entrypoint.d /docker-entrypoint.d
 COPY docker-entrypoint.sh /
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["apache2-foreground"]

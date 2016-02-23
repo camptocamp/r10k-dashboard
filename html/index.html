@@ -53,11 +53,13 @@ function getParameterByName(name) {
   return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
+var org = getParameterByName('org') || '<YOUR_GITHUB_ORG>';
+var r10k_repo = getParameterByName('r10k_repo') || '<YOUR_R10K_REPO>';
 var filter = getParameterByName('filter') || '.';
 
 var dash = new PuppetDashboard({
-  org: '<YOUR_GITHUB_ORG>',
-  r10k_repo: '<YOUR_R10K_REPO>',
+  org: org,
+  r10k_repo: r10k_repo,
   filter: filter,
   autoload: true
 });

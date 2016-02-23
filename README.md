@@ -65,6 +65,17 @@ This repository provides a sample script in PHP, but any server-side language wi
 In the `auth.php` script, you need to edit `$client_id` and `$client_secret` to match your Github application settings. The script should then be named and hosted according to your application callback settings on Github.
 
 
+## Docker image
+
+```shell
+$ docker run -p 8080:80 -e CLIENT_ID=<YOUR_CLIENT_ID> \
+                        -e CLIENT_SECRET=<YOUR_CLIENT_SECRET> \
+                        -e GITHUB_ORG=<YOUR_ORG> \
+                        -e R10K_REPO=<YOUR_R10K_REPO> \
+                        camptocamp/r10k-dashboard:latest
+```
+
+
 ## Contributing
 
 Please report bugs and feature request using [GitHub issue

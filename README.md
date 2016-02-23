@@ -1,6 +1,10 @@
 Puppet Modules Dashboard
 ==============================
 
+[![Docker Pulls](https://img.shields.io/docker/pulls/camptocamp/r10k-dashboard.svg)](https://hub.docker.com/r/camptocamp/r10k-dashboard/)
+[![By Camptocamp](https://img.shields.io/badge/by-camptocamp-fb7047.svg)](http://www.camptocamp.com)
+
+
 This is a simple dashboard to monitor your Puppet modules. In a few words:
 
 * It is written in Javascript, using [`github.js`](https://github.com/michael/github);

@@ -73,7 +73,7 @@ tracker](https://github.com/camptocamp/puppet-modules-dashboard/issues).
 
 ## License
 
-Copyright (c) 2014 <mailto:puppet@camptocamp.com> All rights reserved.
+Copyright (c) 2014-2016 <mailto:puppet@camptocamp.com> All rights reserved.
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

@@ -186,7 +186,7 @@ var plugin_options;
     for (var i=0; i<entries.length; i++) {
       if (/^mod\s/.test(entries[i])) {
         var parts = entries[i].split(/\s*,\s*\n*\s*/);
-        var name_parts = parts[0].match(/mod\s+'(\w+)[\/-](\w+)'/)
+        var name_parts = parts[0].match(/mod\s+'(?:(\w+)[\/-])?(\w+)'/)
         var user = name_parts[1];
         var name = name_parts[2];
         var mod = {

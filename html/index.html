@@ -40,10 +40,8 @@
       </tbody>
     </table>
 
-    <script src="lib/github/dist/github.bundle.min.js"></script>
     <script src="lib/sorttable.js"></script>
-    <script src="r10k_dashboard.js"></script>
-    <script language="JavaScript">
+    <script type="module">
 function getParameterByName(name) {
   name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
   var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
@@ -54,6 +52,8 @@ function getParameterByName(name) {
 var org = getParameterByName('org') || '<YOUR_GITHUB_ORG>';
 var r10k_repo = getParameterByName('r10k_repo') || '<YOUR_R10K_REPO>';
 var filter = getParameterByName('filter') || '.';
+
+import { PuppetDashboard } from "./r10k_dashboard.js"
 
 var dash = new PuppetDashboard({
   org: org,

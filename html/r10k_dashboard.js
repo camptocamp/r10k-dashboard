@@ -1,11 +1,13 @@
 /* Main */
 
+import { Octokit } from "https://cdn.skypack.dev/@octokit/rest";
+
 var dashboard = new Object();
 var cookies = new Object();
 var sortTimeout;
 var repositories;
 var gh_user;
-var github;
+var octokit;
 var token;
 var account;
 var r10k_repo;
@@ -14,9 +16,7 @@ var refresh_randomize;
 var repoHeads;
 var plugin_options;
 
-(function() {
-
-  updateCell = function(repo, cell, value, state, customkey) {
+  export function updateCell(repo, cell, value, state, customkey) {
     var repoLine = document.getElementById(repo);
     var cell = repoLine.getElementsByClassName('plugin:'+cell)[0];
     cell.innerHTML = value;
@@ -257,16 +257,19 @@ var plugin_options;
       document.getElementById(name).getElementsByTagName('a')[0].href = repositories[name].github.uri;
     }
 
-    var r = github.getRepo(repositories[name].github.user, repositories[name].github.repo);
-    repositories[name]['repo'] = r;
-    var repoLine = document.getElementById(name);
-    computeState(repoLine, 'unknown', true);
-  
-    r.show(function(err, repo) {
+    var r = octokit.rest.repos.get({
+      owner: repositories[name].github.user,
+      repo: repositories[name].github.repo
+    }).then((data) => {
+      repositories[name]['repo'] = r;
+      var repoLine = document.getElementById(name);
+      computeState(repoLine, 'unknown', true);
+
+      console.log(data);
       repositories[name].github.repo_obj = r;
-      repositories[name].github.repo_obj.info = repo;
+      repositories[name].github.repo_obj.info = data.data;
       // refresh all cells
-      for (i=0; i<repoHeads.length; i++) {
+      for (var i=0; i<repoHeads.length; i++) {
         var plugin = repoHeads[i].replace('plugin:', '');
         dashboard[plugin](name);
       }
@@ -274,22 +277,11 @@ var plugin_options;
   
     // auto-refresh
     if (refresh > 0) {
-      refresh_time = refresh + Math.random()*refresh*refresh_randomize;
+      var refresh_time = refresh + Math.random()*refresh*refresh_randomize;
       setTimeout(function() {updateRepo(name)}, refresh_time);
     }
   }
 
-  function repoCollaborators(repo, cb) {
-    if (repo.collaborators) {
-      cb(repo.collaborators);
-    } else {
-      repo.listCollaborators(function(err, collabs) {
-        repo.collaborators = collabs;
-        cb(collabs);
-      });
-    }
-  }
-    
   function listRepos(repos, refresh) {
     var spinner = document.getElementById('spinner');
     var reposTable = document.getElementById('repositories');
@@ -301,10 +293,12 @@ var plugin_options;
     var filtered_repos = [];
     for (var i=0; i<repos.length; i++) {
       var name = repos[i].name;
+      /*
       if (filter) {
         filterReg = new RegExp(filter);
         if (! name.match(filterReg)) continue;
       }
+      */
       filtered_repos.push(name);
       repositories[name] = {};
       repositories[name]['info'] = repos[i];
@@ -350,22 +344,24 @@ var plugin_options;
   }
 
   function updateModuleList(account, r10k_repo, refresh) {
-    var pm_common = github.getRepo(account, r10k_repo);
-    pm_common.contents('master', 'Puppetfile', function(err, contents) {
-      if(err) {
-        dispError('Could not find Puppetfile.');
-      } else {
-        var modules = parsePuppetfile(contents);
-        listRepos(modules, refresh);
-      }
+    octokit.rest.repos.getContent({
+      owner: account,
+      repo: r10k_repo,
+      path: 'Puppetfile'
+    }).then(({data}) => {
+      console.log(data);
+      var modules = parsePuppetfile(data);
+      listRepos(modules, refresh);
+  //  }).catch((error) => {
+   //   dispError('Could not find Puppetfile: '+error);
     });
   }
  
   function initRepo(name, heads) {
-    info = repositories[name]['info'];
-    html = '<td><a href="#">'+name+'</a></td>';
+    var info = repositories[name]['info'];
+    var html = '<td><a href="#">'+name+'</a></td>';
 
-    for (i=0; i<heads.length; i++) {
+    for (var i=0; i<heads.length; i++) {
       html += '<td class="'+heads[i]+'"><i class="fa fa-spinner fa-spin"></i></td>';
     }
   
@@ -382,7 +378,7 @@ var plugin_options;
     cookies[name] = null;
   }
 
-  var PuppetDashboard = function(options) {
+  export function PuppetDashboard(options) {
     var org = options.org;
     var user = options.user;
     r10k_repo = options.r10k_repo;
@@ -420,10 +416,12 @@ var plugin_options;
   
     // Plugins
     this.loadPlugin = function(plugin) {
+      /*
       var script = document.createElement('script');
-      script.type = 'text/javascript';
+      script.type = 'module';
       script.src = 'plugins/'+plugin+'.js';
       document.body.appendChild(script);
+      */
     }
 
     this.load = function(token, scope) {
@@ -442,15 +440,15 @@ var plugin_options;
         if (auth_remove_e) {
           auth_remove_e.style.display = 'inline-block';
         }
-        github = new Github({
-          token: token
+        octokit = new Octokit({
+          auth: token
         });
       } else {
         // It's ok not to be authenticated
-        github = new Github({});
+        octokit = new Octokit();
       }
     
-      gh_user = github.getUser();
+      gh_user = octokit.rest.users.getAuthenticated();
     
       var reposTable = document.getElementById('repositories');
       var reposTableBody = document.getElementsByTagName('tbody')[0];
@@ -467,7 +465,7 @@ var plugin_options;
       // Get heads
       var headElems = reposTable.getElementsByTagName('th');
       for (var i=0; i<headElems.length; i++) {
-        classes = headElems[i].className.split(' ');
+        var classes = headElems[i].className.split(' ');
         for (var j=0; j<classes.length; j++) {
           if (classes[j].match(/^plugin:/)) {
             repoHeads.push(classes[j]);
@@ -514,7 +512,6 @@ var plugin_options;
     // PuppetDashboard = exports;
     module.exports = PuppetDashboard;
     module.exports = updateRepo;
-    module.exports = repoCollaborators;
     module.exports = listRepos;
     module.exports = readCookie;
     module.exports = addCookie;
@@ -523,10 +520,513 @@ var plugin_options;
     window.PuppetDashboard = PuppetDashboard;
     window.updateRepo = updateRepo;
     window.refreshModule = refreshModule;
-    window.repoCollaborators = repoCollaborators;
     window.listRepos = listRepos;
     window.readCookie = readCookie;
     window.addCookie = addCookie;
     window.worstState = worstState;
   }
-}).call(this);
+
+
+
+//plugins
+
+
+// endorsement
+dashboard.endorsement = function(name, repo) {
+  var html;
+  if (repositories[name].forge) {
+    html = repositories[name].forge.endorsement;
+  } else {
+    html = '';
+  }
+  updateCell(name, 'endorsement', html);
+}
+
+// issues
+dashboard.issues = function(name) {
+  listIssues(name, 'issues', false);
+}
+
+async function listIssues(name, plugin, incl_pulls) {
+  var r = repositories[name];
+
+  if (r.github.user !== account) {
+    // Only relevant if it's our own module
+    updateCell(name, plugin, 'N/A', 'ok', '-1');
+    return;
+  }
+
+  console.log(plugin+": getting collabs");
+  const collabsData = await octokit.rest.repos.listCollaborators({
+    owner: r.github.user,
+    repo: r.github.repo,
+  });
+  var collabs = collabsData.data;
+
+  var issuesData;
+  if (incl_pulls) {
+    issuesData = await octokit.rest.pulls.list({
+      owner: r.github.user,
+      repo: r.github.repo
+    });
+  } else {
+    issuesData = await octokit.rest.issues.listForRepo({
+      owner: r.github.user,
+      repo: r.github.repo
+    });
+  }
+
+  var issues = issuesData.data;
+  var status;
+  var text;
+  var customkey = 0;
+
+  var t = 0;
+  var l = 0;
+  var title = '';
+  for (var i=0; i < issues.length; i++) {
+    var issue = issues[i];
+    t++;
+    // Check if issue was updated
+    const issue_status = await issueStatus(r, issue, collabs);
+    switch(issue_status.status) {
+      case 'new_comments':
+        l++;
+        title += issue_status.message+"\n";
+        break;
+      case 'no_comments':
+        l++;
+        title += issue_status.message+"\n";
+        break;
+      case 'old_comment':
+        l++;
+        title += issue_status.message+"\n";
+        break;
+    }
+  }
+  var text = l+'/'+t;
+  var customkey = 10*l+t;
+  if (l > 0) {
+    status = 'warn';
+  } else {
+    title = 'No actions needed';
+    status = 'ok';
+  }
+  console.log(plugin+": updating cell");
+  updateIssueCell(name, plugin, r, title, text, status, customkey);
+}
+
+function updateIssueCell(name, plugin, r, title, text, status, customkey) {
+  var html = '<a href="'+r.github.repo_obj.info.html_url+'/'+plugin+'" title="'+title+'">'+text+'</a>';
+  updateCell(name, plugin, html, status, customkey);
+}
+
+
+async function issuesStatus(repo, issues) {
+
+}
+
+
+async function issueStatus(repo, issue, collabs) {
+  console.log("Checking status for issue "+issue.number);
+
+  // Get issues comments
+  //console.log(plugin+": getting comments");
+  const commentsData = await octokit.rest.issues.listComments({
+    owner: repo.github.user,
+    repo: repo.github.repo,
+    issue_number: issue.number,
+  });
+  var comments = commentsData.data;
+
+  // Newer comments are at the end of the list
+  for (var i=comments.length-1; i >= 0; i--) {
+    if (comments[i].issue_url === issue.url) {
+      // Check that last comment was made less than 30 days ago
+      var updated = new Date(comments[i].updated_at);
+      var now = new Date();
+      if ((now-updated)/(1000*3600*24*30) > 1) {
+        return {
+          'status': 'old_comment',
+          'message': 'issue '+issue.number+' was last commented on '+updated.toDateString()
+        };
+      }
+
+      // Check author of last comment
+      for (var j=0; j < collabs.length; j++) {
+        if (comments[i].user.login === collabs[j].login ) {
+          return {
+            'status': 'no_new_comments',
+            'message': 'issue '+issue.number+' was last commented by '+comments[i].user.login
+          };
+        }
+      }
+      // Comment is not by a collaborator
+      return {
+        'status': 'new_comments',
+        'message': 'New comment by '+comments[i].user.login+' on issue '+issue.number
+      };
+    }
+  }
+  // No comments found
+  return {
+    'status': 'no_comments',
+    'message': 'No comments on issue '+issue.number
+  };
+}
+
+dashboard.latest_version = function(name) {
+  var r = repositories[name];
+  var html;
+  
+  if (r.forge) {
+    var version = r.forge.current_release.version;
+    var version_url = 'https://forge.puppetlabs.com/'+r.forge.current_release.module.owner.username+'/'+r.forge.name+'/'+version;
+    html = '<a href="'+version_url+'">'+version+'</a>';
+    // compare with github/tags
+    r.repo.listTags(function(err, tags) {
+      if (err) {
+        html += ' <a href="'+r.github.repo_obj.info.tags_url+'" title="Failed to get tags"><i class="fa fa-warning"></i></a>';
+        updateCell(name, 'latest_version', html, 'warn', '1');
+        return;
+      } else {
+        var new_ref;
+        if (r.info.ref) {
+          // Use ref as base
+          new_ref = r.info.ref;
+        } else {
+          new_ref_tag = versionTagURL(tags, r.info.version);
+          if (new_ref_tag) {
+            new_ref = new_ref_tag.tag;
+          } else {
+            // No tag found, it's a warning
+            html += ' <a href="'+r.github.repo_obj.info.tags_url+'" title="No matching tag '+r.info.version+' found in repository"><i class="fa fa-warning"></i></a>';
+            updateCell(name, 'latest_version', html, 'warn', '2');
+            return;
+          }
+        }
+        var version_tag = versionTagURL(tags, version);
+        if (version_tag) {
+          html += ' <a href="'+version_tag.url+'" title="Matching tag found in repository"><i class="fa fa-tag"></i></a>';
+          checkForgeCommits(name, r, version, r.github.user, version_tag.tag, r.github.user, new_ref, html, true);
+        } else {
+          // No tag found, it's a warning
+          html += ' <a href="'+r.info.tags_url+'" title="No matching tag '+version+' found in repository"><i class="fa fa-warning"></i></a>';
+          updateCell(name, 'latest_version', html, 'warn', '3');
+          return;
+        }
+      }
+    });
+  } else {
+    // Nothing on forge, compare with account/master
+    var version = 'master';
+    var base_user;
+    var version_url;
+    if (r.github.repo_obj.info.fork) {
+      base_user = r.github.repo_obj.info.parent.owner.login;
+      version_url = r.github.repo_obj.info.parent.html_url;
+    } else {
+      base_user = r.github.user;
+      version_url = r.github.uri;
+    }
+    html = '<a href="'+version_url+'">'+version+'</a>';
+    checkForgeCommits(name, r, version, base_user, version, r.github.user, r.info.ref, html, false);
+  }
+}
+
+function checkForgeCommits(name, tags_r, version, base_user, base_ref, new_user, new_ref, html, check_release) {
+  var state;
+  var customkey;
+
+  // get diff
+  tags_r.repo.compare(base_user+':'+base_ref, new_user+':'+new_ref, function(err, diff) {
+    if (err) {
+      html += ' <span title="Failed to get commits since tag"><i class="fa fa-warning"></i></span>';
+      updateCell(name, 'latest_version', html, 'err', '15');
+      return;
+    } else {
+      if (diff.status == 'ahead') {
+        diff_url = diff.html_url;
+        html += ' <a href="'+diff_url+'" title="Branch '+new_ref+' is '+diff.ahead_by+' commits ahead of tag '+version+'"><i class="fa fa-angle-double-up"></i></a>';
+        state = 'warn';
+        customkey = '11';
+      } else if (diff.status == 'behind') {
+        diff_url = invertDiffURL(diff.html_url);
+        html += ' <a href="'+diff_url+'" title="Branch '+new_ref+' is '+diff.behind_by+' commits behind of tag '+version+'"><i class="fa fa-angle-double-down"></i></a>';
+        state = 'warn';
+        customkey = '12';
+      } else if (diff.status == 'diverged') {
+        diff_url = diff.html_url;
+        html += ' <a href="'+diff_url+'" title="Branch '+new_ref+' is '+diff.behind_by+' commits behind and '+diff.ahead_by+' commits ahead of tag '+version+'"><i class="fa fa-code-fork"></i></a>';
+      } else if (diff.status == 'identical') {
+        html += ' <span title="Branch '+new_ref+' is identical to tag '+version+'"><i class="fa fa-check"></i></span>';
+        state = 'ok';
+        customkey = '13';
+        if (new_user === account && check_release) {
+          // Check if a new release is due
+          checkForgeCommits(name, tags_r, version, new_user, base_ref, new_user, 'master', html);
+        }
+      } else {
+        html += ' <span title="Branch '+new_ref+' has comparison status with tag '+version+' set to '+diff.status+'"><i class="fa fa-warning"></i></span>';
+        state = 'unknown';
+        customkey = '14';
+      }
+    }
+    updateCell(name, 'latest_version', html, state, customkey);
+    return;
+  });
+}
+
+function versionTagURL(tags, version) {
+  for (var i=0; i<tags.length; i++) {
+    if (tags[i].name === version || tags[i].name === 'v'+version) {
+      return { 'url': tags[i].commit.url, 'tag': tags[i].name };
+    }
+  }
+}
+
+function invertDiffURL(url) {
+  var base = url.match(/\/([^/]+)\.\.\./);
+  return url.replace(base[0], '/')+'...'+base[1];
+}
+
+dashboard.pinned_version = function(name) {
+  var r = repositories[name];
+  var version;
+  var url;
+  var html;
+  var state = 'ok';
+  if (r.info.ref) {
+    version = r.info.ref;
+    if (/^[a-z0-9]+$/.test(version)) {
+      // Assume commit
+      url = r.info.git+'/tree/'+version;
+    } else {
+      // Assume tag (or branch?)
+      url = r.info.git+'/releases/tag/'+version;
+    }
+    html = '<a href="'+url+'">'+version+'</a>';
+  } else if (r.info.version) {
+    version = r.info.version;
+    url = 'https://forge.puppetlabs.com/'+r.forge.current_release.module.owner.username+'/'+r.forge.name+'/'+version;
+    html = '<a href="'+url+'">'+version+'</a>';
+  } else {
+    html = 'N/A <i class="fa fa-warning" title="No pin set"></i>';
+    state = 'warning';
+  }
+  updateCell(name, 'pinned_version', html, state);
+}
+
+dashboard.priv = function(name) {
+  var repo = repositories[name].github.repo_obj.info;
+  var html = repo.private ? '<i class="fa fa-lock"></i>' : '';
+  var customkey = repo.private ? '1' : '0';
+  updateCell(name, 'priv', html, null, customkey);
+}
+
+dashboard.pulls = function(name) {
+  listIssues(name, 'pulls', true);
+}
+
+dashboard.status = function(name, repo) {
+  if (repo.fork) {
+    var p = repo.parent;
+    var r = repositories[name]['repo'];
+    var b = repo.default_branch;
+
+    // get diff
+    r.compare(p.owner.login+':'+b, account+':'+b, function(err, diff) {
+      if (err) {
+        updateCell(name, 'status', 'ERR', 'err');
+      } else {
+        var diff_msg;
+        var state = 'ok';
+        var customkey;
+        var diff_url;
+        if (diff.status == 'ahead') {
+          diff_msg = '<span title="'+diff.ahead_by+' commits ahead"><i class="fa fa-angle-double-up"></i> ('+diff.ahead_by+')</span>';
+          diff_url = diff.html_url;
+          html = '<a href="'+diff_url+'">'+diff_msg+'</a>';
+          state = 'warn';
+          customkey = '3';
+        } else if (diff.status == 'behind') {
+          diff_msg = '<span title="'+diff.behind_by+' commits behind"><i class="fa fa-angle-double-down"></i> ('+diff.behind_by+')</span>';
+          diff_url = invertDiffURL(diff.html_url);
+          html = '<a href="'+diff_url+'">'+diff_msg+'</a>';
+          state = 'ok';
+          customkey = '2';
+        } else if (diff.status == 'diverged') {
+          ahead_url = diff.html_url;
+          behind_url = invertDiffURL(diff.html_url);
+          html = '<span title="'+diff.behind_by+' commits behind and '+diff.ahead_by+' commits ahead"><i class="fa fa-code-fork"></i></span> ';
+          html += '<a href="'+behind_url+'" title="'+diff.behind_by+' commits behind">('+diff.behind_by+')</a> ';
+          html += '<a href="'+ahead_url+'" title="'+diff.ahead_by+' commits ahead">('+diff.ahead_by+')</a>';
+          state = 'err';
+          customkey = '1';
+        } else if (diff.status == 'identical') {
+          diff_msg = '<i class="fa fa-check" title="identical"></i>';
+          html = diff_msg;
+          state = 'ok';
+          customkey = '0';
+        } else {
+          diff_msg = diff.status;
+          html = diff_msg;
+          customkey = '4';
+        }
+        updateCell(name, 'status', html, state, customkey);
+      }
+    });
+  } else {
+    updateCell(name, 'status', '');
+  }
+}
+
+
+dashboard.travis = function(name) {
+  var r = repositories[name];
+
+  if (r.github.user !== account) {
+    // Only relevant if it's our own module
+    updateCell(name, 'travis', 'N/A', 'unknown', '10');
+    return;
+  }
+
+  var status = 'unknown';
+  var repo = r.github.repo_obj.info;
+  if (repo.private) {
+    var access_token = readCookie('travis_access_token');
+    if (access_token) {
+      getTravisStatus(name, repo, true, access_token);
+    } else {
+      var gh_token = readCookie('access_token');
+      travisAPICall('/auth/github', {"github_token": gh_token}, true, 'POST', null, false, function(err, res) {
+        access_token = res.access_token;
+        addCookie('travis_access_token', access_token, 1);
+        getTravisStatus(name, repo, true, access_token);
+      });
+    }
+  } else {
+    getTravisStatus(name, repo, false, null);
+  }
+}
+
+// Limit state to warning if repo is a fork
+function travisMungeState(repo, state) {
+  if ((repo.fork || repo.owner.login !== account) && state == 'err') {
+    return 'warn';
+  } else {
+    return state;
+  }
+}
+
+function getTravisStatus(name, repo, priv, travis_token) {
+  var gh = repositories[name].github;
+  travisAPICall('/repos/'+gh.user+'/'+gh.repo+'/branches/'+repo.default_branch, null, priv, 'GET', travis_token, false, function(err, res) {
+    var msg;
+    var customkey;
+    var image;
+    if (err) {
+      msg = 'Error while getting Travis status';
+      status = travisMungeState(repo, 'err');
+      customkey = '9';
+      image = null;
+    } else {
+      var date = new Date(res.branch.started_at);
+      var date_str = ' on '+date.toLocaleDateString()+' at '+date.toLocaleTimeString();
+      msg = 'Last build state: '+res.branch.state+' (build #'+res.branch.number+date_str+')';
+      switch (res.branch.state) {
+        case 'passed':
+          status = 'ok';
+          customkey = '0';
+          image = 'passing';
+          break;
+        case 'failed':
+          status = travisMungeState(repo, 'err');
+          customkey = '1';
+          image = 'failing';
+          break;
+        case 'errored':
+          status = travisMungeState(repo, 'err');
+          customkey = '2';
+          image = 'error';
+          break;
+        case 'created':
+          status = 'warn';
+          customkey = '3';
+          image = 'pending';
+          break;
+        case 'canceled':
+          status = 'warn';
+          customkey = '4';
+          image = 'canceled';
+          break;
+        default:
+          status = 'unknown';
+          customkey = '5';
+          image = 'unknown';
+          break;
+      }
+    }
+    var api = travisURL(priv);
+    // TODO: pass name + repo.name
+    updateTravisCell(name, 'https://'+api+'/', repo.default_branch, travis_token, msg, status, image, customkey);
+  });
+}
+
+function travisAPICall(path, data, priv, verb, travis_token, use_corsproxy, cb) {
+  var xhr = new XMLHttpRequest();
+  var api = travisAPIURL(priv);
+  var url;
+  if (use_corsproxy) {
+    url = 'http://www.corsproxy.com/'+api+path+'?'+ (new Date()).getTime(); 
+  } else {
+    url = 'https://'+api+path+'?'+ (new Date()).getTime(); 
+  }
+  xhr.dataType = "json";
+  xhr.open(verb, url, true);
+  xhr.onreadystatechange = function () {
+    if (this.readyState == 4) {
+      if (this.status >= 200 && this.status < 300 || this.status === 304) {
+        cb(null, this.responseText ? JSON.parse(this.responseText) : true, this);
+      } else {
+        cb({path: path, request: this, error: this.status});
+      }
+    }
+  }
+  xhr.setRequestHeader('Accept','application/vnd.travis-ci.2+json');
+  xhr.setRequestHeader('Content-Type','application/json;charset=UTF-8');
+  if (travis_token) {
+    xhr.setRequestHeader('Authorization','token "'+travis_token+'"');
+  }
+  data ? xhr.send(JSON.stringify(data)) : xhr.send();
+}
+
+function travisAPIURL(priv) {
+  if (priv) {
+    return 'api.travis-ci.com';
+  } else {
+    return 'api.travis-ci.org';
+  }
+}
+
+function travisURL(priv) {
+  if (priv) {
+    return 'magnum.travis-ci.com';
+  } else {
+    return 'travis-ci.org';
+  }
+}
+
+function updateTravisCell(name, travis_url, branch, travis_token, msg, status, image, customkey) {
+  var gh = repositories[name].github;
+  var html = '<a href="'+travis_url+gh.user+'/'+gh.repo+'">';
+  if (image) {
+    var image_src = 'images/travis/'+image+'.svg';
+    html += '<img src="'+image_src+'" title="'+msg+' (state='+status+')" />';
+  } else {
+    html += '<span title="'+msg+'">'+status+'</span>';
+  }
+  html += '</a>';
+  updateCell(name, 'travis', html, status, customkey);
+}
+

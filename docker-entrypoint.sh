@@ -6,5 +6,6 @@ if [[ -d "$DIR" ]]
 then
   /bin/run-parts --verbose --regex '\.(sh|rb)$' "$DIR"
 fi
-
-exec "$@"
+ 
+apache2ctl -D FOREGROUND
+cat /var/log/apache2/error.log

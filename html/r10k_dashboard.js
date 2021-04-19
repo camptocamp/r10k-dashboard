@@ -737,17 +737,27 @@ async function latestVersion(name) {
   }
 }
 
-function checkForgeCommits(name, tags_r, version, base_user, base_ref, new_user, new_ref, html, check_release) {
+async function checkForgeCommits(name, tags_r, version, base_user, base_ref, new_user, new_ref, html, check_release) {
   var state;
   var customkey;
 
   // get diff
-  tags_r.repo.compare(base_user+':'+base_ref, new_user+':'+new_ref, function(err, diff) {
+
+  const diffData = await octokit.rest.repos.compareCommits({
+    owner: new_user,
+    repo: name,
+    base: base_user+':'+base_ref,
+    head: new_user+':'+new_ref,
+  });
+  var diff = diffData.data;
+
+  /*
     if (err) {
       html += ' <span title="Failed to get commits since tag"><i class="fa fa-warning"></i></span>';
       updateCell(name, 'latest_version', html, 'err', '15');
       return;
     } else {
+    */
       if (diff.status == 'ahead') {
         diff_url = diff.html_url;
         html += ' <a href="'+diff_url+'" title="Branch '+new_ref+' is '+diff.ahead_by+' commits ahead of tag '+version+'"><i class="fa fa-angle-double-up"></i></a>';
@@ -774,10 +784,8 @@ function checkForgeCommits(name, tags_r, version, base_user, base_ref, new_user,
         state = 'unknown';
         customkey = '14';
       }
-    }
     updateCell(name, 'latest_version', html, state, customkey);
     return;
-  });
 }
 
 function versionTagURL(tags, version) {

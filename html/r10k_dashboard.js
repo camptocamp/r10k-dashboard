@@ -224,6 +224,8 @@ var plugin_options;
     };
     xhr.setRequestHeader('X-Referer',location.href);
     xhr.setRequestHeader('Content-Type','application/json;charset=UTF-8');
+    xhr.onerror = function() {
+    };
     xhr.send();
   };
     
@@ -744,8 +746,8 @@ async function checkForgeCommits(name, tags_r, version, base_user, base_ref, new
   // get diff
 
   const diffData = await octokit.rest.repos.compareCommits({
-    owner: new_user,
-    repo: name,
+    owner: tags_r.github.user,
+    repo: tags_r.github.repo,
     base: base_user+':'+base_ref,
     head: new_user+':'+new_ref,
   });

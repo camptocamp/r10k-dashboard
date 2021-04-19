@@ -686,10 +686,11 @@ async function latestVersion(name) {
     var version_url = 'https://forge.puppetlabs.com/'+r.forge.current_release.module.owner.username+'/'+r.forge.name+'/'+version;
     html = '<a href="'+version_url+'">'+version+'</a>';
     // compare with github/tags
-    const tags = await octokit.rest.repos.listTags({
+    const tagsData = await octokit.rest.repos.listTags({
       owner: r.github.user,
       repo: r.github.repo,
     });
+    const tags = tagsData.data;
     /*
       if (err) {
         html += ' <a href="'+r.github.repo_obj.info.tags_url+'" title="Failed to get tags"><i class="fa fa-warning"></i></a>';

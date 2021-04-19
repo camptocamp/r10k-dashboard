@@ -761,6 +761,7 @@ async function checkForgeCommits(name, tags_r, version, base_user, base_ref, new
       return;
     } else {
     */
+  var diff_url;
       if (diff.status == 'ahead') {
         diff_url = diff.html_url;
         html += ' <a href="'+diff_url+'" title="Branch '+new_ref+' is '+diff.ahead_by+' commits ahead of tag '+version+'"><i class="fa fa-angle-double-up"></i></a>';

@@ -409,7 +409,7 @@ var plugin_options;
     }
   
     this.authRemove = function() {
-      cookie_names = Object.keys(cookies);
+      var cookie_names = Object.keys(cookies);
       for (var i=0; i<cookie_names.length; i++) {
         eraseCookie(cookie_names[i]);
       }

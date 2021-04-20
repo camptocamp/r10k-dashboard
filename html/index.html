@@ -10,7 +10,7 @@
       <a href="javascript:dash.sortByState();"><i class="fas fa-sort-amount-down fa-2x" title="Sort by state"></i></a>
       <a href="javascript:dash.refreshList();"><i class="fas fa-sync-alt fa-2x" title="Refresh list"></i></a>
       <a id="auth_link_priv" href="javascript:window.open('https://github.com/login/oauth/authorize?client_id=YOUR_CLIENT_ID&scope=repo');" style="display:none"><i class="fas fa-lock fa-2x" title="Allow access to Github private repositories"></i></a>
-      <a id="auth_remove" style="display:none;" href="javascript:dash.authRemove();"><i class="fas fa-sign-out fa-2x" title="Sign out"></i></a>
+      <a id="auth_remove" style="display:none;" href="#"><i class="fas fa-sign-out fa-2x" title="Sign out"></i></a>
       <br />
       <div id='total'></div>
       <div id='total_score'></div>
@@ -73,6 +73,10 @@ var dash = new PuppetDashboard({
   filter: filter,
   autoload: true
 });
+
+document.getElementById('auth_remove').onclick = function() {
+  dash.authRemove();
+}
 document.title = 'R10k report for '+org;
     </script>
   </body>

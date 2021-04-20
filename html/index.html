@@ -21,6 +21,30 @@
         Sign in with Github <i class="fa fa-sign-in fa-2x" title="Sign in with Github"></i>
       </a>
     </div>
+    <div class="jumbotron">
+      <p>
+      This dashboard analyses the Puppetfile from a Puppet control repository and displays information on the modules listed in it.
+      </p>
+      <p>
+      The columns indicate:
+      <ul>
+        <li>Whether the repository is private on GitHub</li>
+        <li>The pinned version of the module in the Puppetfile (on the Forge or GitHub)</li>
+        <li>The latest available version of the module (on the Forge or GitHub)</li>
+        <li>The number of Pull Requests open</li>
+        <li>The number of Issues open</li>
+        <li>The build status on Travis CI</li>
+        <li>The kind of endorsement on the Forge</li>
+      </ul>
+      </p>
+      <p>
+      In order to get started:
+      <ul>
+        <li>Allow the application to access GitHub by clicking the Octocat icon</li>
+        <li>Allow the application to access private GitHub repositories by clicking the lock icon</li>
+      </ul>
+      </p>
+    </div>
     <table id='repositories'>
       <thead>
         <tr>

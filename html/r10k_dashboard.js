@@ -364,10 +364,10 @@ var plugin_options;
     var html = '<td><a href="#">'+name+'</a></td>';
 
     for (var i=0; i<heads.length; i++) {
-      html += '<td class="'+heads[i]+'"><i class="fa fa-spinner fa-spin"></i></td>';
+      html += '<td class="'+heads[i]+'"><i class="fas fa-spinner fa-spin"></i></td>';
     }
   
-    html += '<td><a href="javascript:refreshModule(\''+name+'\')"><i class="fa fa-refresh fa-1g"></i></a></td>';
+    html += '<td><a href="javascript:refreshModule(\''+name+'\')"><i class="fas fa-sync-alt fa-1g"></i></a></td>';
     document.getElementById(name).innerHTML = html;
   }
   

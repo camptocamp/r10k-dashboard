@@ -9,7 +9,7 @@
     <div id="header">
       <a id="sort_by_state" href="#"><i class="fas fa-sort-amount-down fa-2x" title="Sort by state"></i></a>
       <a id="refresh_list" href="#;"><i class="fas fa-sync-alt fa-2x" title="Refresh list"></i></a>
-      <a id="auth_link_priv" href="javascript:window.open('https://github.com/login/oauth/authorize?client_id=YOUR_CLIENT_ID&scope=repo');" style="display:none"><i class="fas fa-lock fa-2x" title="Allow access to Github private repositories"></i></a>
+      <a id="auth_link_priv" href="#" style="display:none"><i class="fas fa-lock fa-2x" title="Allow access to Github private repositories"></i></a>
       <a id="auth_remove" style="display:none;" href="#"><i class="fas fa-sign-out fa-2x" title="Sign out"></i></a>
       <br />
       <div id='total'></div>
@@ -28,7 +28,7 @@
       </p>
     </div>
     <div id="auth_link" style="position:absolute;z-index:99;margin:0 auto; width:800px; height:300px; background: white; text-align: center;">
-      <a href="javascript:window.open('https://github.com/login/oauth/authorize?client_id=YOUR_CLIENT_ID');">
+      <a href="#">
         <img src="https://github.githubassets.com/images/modules/open_graph/github-octocat.png" width="400" /><br />
         Sign in with Github <i class="fas fa-sign-in fa-2x" title="Sign in with Github"></i>
       </a>
@@ -73,6 +73,15 @@ var dash = new PuppetDashboard({
   filter: filter,
   autoload: true
 });
+
+var client_id = 'YOUR_CLIENT_ID';
+
+document.getElementById('auth_link_priv').onclick = function() {
+  window.open('https://github.com/login/oauth/authorize?client_id='+client_id+'&scope=repo');
+}
+document.getElementById('auth_link').onclick = function() {
+  window.open('https://github.com/login/oauth/authorize?client_id='+client_id);
+}
 
 document.getElementById('sort_by_state').onclick = function() {
   dash.sortByState();
